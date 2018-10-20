@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/Spectre">
+        <file>Resources/icon-frequency.png</file>
+        <file>Resources/black-library.png</file>
+        <file>Resources/edit.png</file>
+        <file>Resources/exit.png</file>
+        <file>Resources/signal_lib.png</file>
+    </qresource>
+</RCC>
