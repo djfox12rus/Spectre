@@ -5,8 +5,15 @@
 
 class GraphEditor : public BaseGraphView
 {
+	Q_OBJECT
+
 public:
 	GraphEditor(QWidget * parent = nullptr);
+
+	const QPolygonF&	currentLine()const;
+
+public slots:
+	void	discard();
 
 protected:
 	QPixmap	updateGraph(QPixmap temp) override;

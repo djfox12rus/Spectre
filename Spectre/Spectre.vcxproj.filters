@@ -51,12 +51,24 @@
     <ClCompile Include="SignalLibrary.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GraphFunction.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="Spectre.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="BaseGraphView.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="SignalLibrary.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="GraphEditor.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="SignalEditor.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
@@ -69,13 +81,7 @@
     <ClInclude Include="GraphView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GraphEditor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SignalEditor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SignalLibrary.h">
+    <ClInclude Include="GraphFunction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -19,10 +19,10 @@ public:
 
 public slots:
 
-	void	setXLowBordes(double border);
-	void	setXHighBordes(double border);
-	void	setYLowBordes(double border);
-	void	setYHighBordes(double border);
+	void	setXLowBorder(double border);
+	void	setXHighBorder(double border);
+	void	setYLowBorder(double border);
+	void	setYHighBorder(double border);
 	void	setXGridStep(double step);
 	void	setYGridStep(double step);
 
@@ -46,13 +46,15 @@ protected:
 	void	resizeEvent(QResizeEvent* event) override;
 	void	mouseMoveEvent(QMouseEvent* event) override;
 
+	void	updateAndRepaint();
+
 private:
 	QPixmap			_graph;
 	QPixmap			_temp;
 	QPixmap			_templateGraph;
 	QPainter		_painter;
 
-	std::pair<double, double>	_xBorders {0.0, 10.0};
+	std::pair<double, double>	_xBorders {-5, 5};
 	std::pair<double, double>	_yBorders {-1.0, 1.0};
 	std::pair<double, double>	_xyGridSteps{0.5, 0.1};
 
@@ -67,7 +69,6 @@ private:
 
 	void			insertGraph(QPixmap& graph, QPixmap templateGraph);
 
-	void			updateAndRepaint();
 
 	static inline QString adjCoord(double value, double eps);
 

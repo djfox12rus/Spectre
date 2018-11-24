@@ -1,18 +1,32 @@
 #pragma once
+
+#include <functional>
+
 #include <QtWidgets/QMainWindow>
 
-class BaseGraphView;
+class GraphEditor;
 
 class SignalEditor : public QMainWindow
 {
+	Q_OBJECT
+
 public:
 	SignalEditor(QWidget* parent = nullptr);
 
+	std::function<double(double)>	currentFunction() const;
+	bool							isFunctionEmpty()const;
+
+signals:
+	void	apply();
 
 private:
-	BaseGraphView * _editor{};
+	GraphEditor * _editor{};
 
 
-	void init();
+	void				init();
+	QList<QAction*>		initActions();
+	QToolBar*			initToolBar(const QList<QAction*>& acts);
+	QMenuBar*			initMenuBar(const QList<QAction*>& acts);
+
 };
 

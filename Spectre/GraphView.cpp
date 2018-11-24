@@ -4,7 +4,7 @@
 #include <QPolygonF>
 #include <QPen>
 
-static constexpr double precision = 50;
+static constexpr double precision = 200;
 
 GraphView::GraphView(QWidget * parent)
 	:BaseGraphView(parent)
@@ -14,6 +14,7 @@ GraphView::GraphView(QWidget * parent)
 void GraphView::setFunction(std::function<double(double)> func)
 {
 	_func = func;
+	updateAndRepaint();
 }
 
 QPixmap GraphView::updateGraph(QPixmap temp)

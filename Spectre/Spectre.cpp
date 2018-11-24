@@ -13,6 +13,7 @@
 #include <QDoubleSpinBox>
 #include <QLabel>
 #include <QPushButton>
+#include <QMargins>
 
 #include "GraphView.h"
 #include "SignalEditor.h"
@@ -55,12 +56,12 @@ Spectre::Spectre(QWidget *parent)
 
 void Spectre::openSignalEditor()
 {
-	_editor->showMaximized();
+	_editor->show();
 }
 
 void Spectre::openSignalLibrary()
 {
-	_lib->showMaximized();
+	_lib->show();
 }
 
 void Spectre::openParamsDialog()
@@ -69,6 +70,23 @@ void Spectre::openParamsDialog()
 	if (result == QDialog::Accepted)
 	{
 
+	}
+}
+
+void Spectre::reciveLibFunction()
+{
+	_currentGraph->setFunction(_lib->currentFunction());
+}
+
+void Spectre::reciveEditorFunction()
+{
+	if (_editor->isFunctionEmpty())
+	{
+		_currentGraph->setFunction({});
+	}
+	else
+	{
+		_currentGraph->setFunction(_editor->currentFunction());
 	}
 }
 
@@ -95,6 +113,7 @@ QTabWidget * Spectre::initCentralWgt()
 	auto centralWgt = new QTabWidget;
 	centralWgt->addTab(initSignalViewTab(), signalTabStr);
 	centralWgt->addTab(initSpectreViewTab(), spectreTabStr);
+	centralWgt->setContentsMargins(0,0,0,0);
 	return centralWgt;
 }
 
@@ -102,10 +121,10 @@ QWidget * Spectre::initSignalViewTab()
 {
 	auto tab = new QWidget;
 
-	auto graph = new GraphView;
+	_currentGraph = new GraphView;
 
 	auto layout = new QVBoxLayout;
-	layout->addWidget(graph);
+	layout->addWidget(_currentGraph);
 
 	tab->setLayout(layout);
 	return tab;
@@ -163,12 +182,14 @@ QMenuBar * Spectre::initMenuBar(const QList<QAction*>& signalActs)
 SignalEditor * Spectre::initEditor()
 {
 	auto edit = new SignalEditor(this);
+	connect(edit, &SignalEditor::apply, this, &Spectre::reciveEditorFunction);
 	return edit;
 }
 
 SignalLibrary * Spectre::initLibrary()
 {
 	auto lib = new SignalLibrary(this);
+	connect(lib, &SignalLibrary::apply, this, &Spectre::reciveLibFunction);
 	return lib;
 }
 

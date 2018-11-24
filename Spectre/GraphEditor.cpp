@@ -6,8 +6,20 @@
 #include <QMouseEvent>
 #include <QCursor>
 
+
 GraphEditor::GraphEditor(QWidget * parent)
 {
+}
+
+void GraphEditor::discard()
+{
+	_currentLine.clear();
+	updateAndRepaint();
+}
+
+const QPolygonF & GraphEditor::currentLine() const
+{
+	return _currentLine;
 }
 
 QPixmap GraphEditor::updateGraph(QPixmap temp)

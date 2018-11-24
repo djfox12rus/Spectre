@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include <QtWidgets/QMainWindow>
 #include <QList>
 
@@ -7,6 +9,8 @@ class SignalEditor;
 class SignalLibrary;
 class QTabWidget;
 class QDialog;
+
+class GraphView;
 
 class Spectre : public QMainWindow
 {
@@ -20,12 +24,19 @@ private slots:
 	void		openSignalLibrary();
 	void		openParamsDialog();
 
+	void		reciveLibFunction();
+	void		reciveEditorFunction();
+
 private:
+
+	std::function<double(double)> _currentSignal;
 
 	//BaseGraphView*		_view;
 	SignalEditor*		_editor{};
 	SignalLibrary*		_lib{};
 	QDialog*			_signalParams{};
+
+	GraphView*			_currentGraph{};
 
 	void				init();
 	QTabWidget*			initCentralWgt();

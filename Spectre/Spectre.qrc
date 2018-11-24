@@ -5,5 +5,7 @@
         <file>Resources/edit.png</file>
         <file>Resources/exit.png</file>
         <file>Resources/signal_lib.png</file>
+        <file>Resources/cross.png</file>
+        <file>Resources/verification-mark.png</file>
     </qresource>
 </RCC>

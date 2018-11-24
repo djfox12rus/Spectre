@@ -31,25 +31,25 @@ BaseGraphView::BaseGraphView(QWidget* parent)
 	setCursor(Qt::CrossCursor);
 }
 
-void BaseGraphView::setXLowBordes(double border)
+void BaseGraphView::setXLowBorder(double border)
 {
 	_xBorders.first = border;
 	updateAndRepaint();
 }
 
-void BaseGraphView::setXHighBordes(double border)
+void BaseGraphView::setXHighBorder(double border)
 {
 	_xBorders.second = border;
 	updateAndRepaint();
 }
 
-void BaseGraphView::setYLowBordes(double border)
+void BaseGraphView::setYLowBorder(double border)
 {
 	_yBorders.first = border;
 	updateAndRepaint();
 }
 
-void BaseGraphView::setYHighBordes(double border)
+void BaseGraphView::setYHighBorder(double border)
 {
 	_yBorders.second = border;
 	updateAndRepaint();
@@ -295,7 +295,7 @@ std::tuple<QPixmap, QVector<QLineF>, QVector<QLineF>, BaseGraphView::CoordsValue
 		yCoords.emplace_back(i, j);
 	}
 
-	_yGraphBorders.second = j - realYStep;
+	_yGraphBorders.second = j - (j > graphSize.height()? realYStep : 0);
 
 	{
 		_painter.begin(&templateGraph);
