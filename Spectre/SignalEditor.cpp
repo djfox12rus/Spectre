@@ -23,6 +23,11 @@ std::function<double(double)> SignalEditor::currentFunction() const
 	return GraphFunction(_editor->currentLine());
 }
 
+std::pair<double, double> SignalEditor::xRange() const
+{
+	return {-5,5};
+}
+
 bool SignalEditor::isFunctionEmpty() const
 {
 	return _editor->currentLine().empty()|| _editor->currentLine().size() == 1;
@@ -31,10 +36,6 @@ bool SignalEditor::isFunctionEmpty() const
 void SignalEditor::init()
 {
 	_editor = new GraphEditor;
-	_editor->setXLowBorder(-5);
-	_editor->setXHighBorder(5);
-	_editor->setYLowBorder(-1.5);
-	_editor->setYHighBorder(1.5);
 
 	setCentralWidget(_editor);
 

@@ -14,6 +14,7 @@ public:
 	SignalLibrary(QWidget* parent = nullptr);
 
 	std::function<double(double)>	currentFunction() const;
+	std::function<double(double)>	currentSpectre() const;
 
 signals:
 	void	setTauVisible(bool visible);
@@ -36,7 +37,7 @@ private:
 		Libsig6,
 		Libsig7,
 		Libsig8,
-		Libsig9,
+		SincPiX,
 		Libsig10,
 		Libsig11,
 		Libsig12,
@@ -86,6 +87,8 @@ private:
 	QString		getSignalName(int type);
 	void		updateFunction();
 
+	std::function<double(double)>	currentSpectrePriv()const;
+
 	static double libsig1(double t, double tau);			//1
 	static double libsig2(double t, double tau);
 	static double libsig3(double t, double tau);
@@ -94,7 +97,7 @@ private:
 	static double libsig6(double t, double tau);
 	static double libsig7(double t, double tau);
 	static double libsig8(double t, double tau);
-	static double libsig9(double t);
+	static double sincPiX(double t);
 	static double libsig10(double t);
 	static double libsig11(double t, double a);
 	static double libsig12(double t, double a);
@@ -122,6 +125,45 @@ private:
 	static double libsig34(double t, double a);
 	static double libsig35(double t, double a);
 	static double libsig36(double t, double a);
+
+	static double sinc(double x);
+
+	static double spectr1(double w, double tau);
+	static double spectr2(double w, double tau);
+	static double spectr3(double w, double tau);
+	static double spectr4(double w, double tau);
+	static double spectr5(double w, double tau);
+	static double spectr6(double w, double tau);
+	static double spectr7(double w, double tau);
+	static double spectr8(double w, double tau);
+	static double spectr9(double w);
+	static double spectr10(double w);
+	static double spectr11(double w, double a);
+	static double spectr12(double w, double a);
+	static double spectr13(double w, double a);
+	static double spectr14(double w, double a);
+	static double spectr15(double w, double a);
+	static double spectr16(double w, double tau, double a);
+	static double spectr17(double w, double a);
+	static double spectr18(double w, double a, double b);
+	static double spectr19(double w, double a);
+	static double spectr20(double w, double a);
+	static double spectr21(double w, double a);
+	static double spectr22(double w, double a);
+	static double spectr23(double w, double a);
+	static double spectr24(double w, double a);
+	static double spectr25(double w, double a);
+	static double spectr26(double w, double a);
+	static double spectr27(double w, double a);
+	static double spectr28(double w, double a);
+	static double spectr29(double w, double a);
+	static double spectr30(double w, double a);
+	static double spectr31(double w, double a);
+	static double spectr32(double w, double tau);
+	static double spectr33(double w, double a);
+	static double spectr34(double w, double a);
+	static double spectr35(double w, double a);
+	static double spectr36(double w, double a);
 
 };
 

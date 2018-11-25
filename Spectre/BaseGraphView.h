@@ -23,8 +23,8 @@ public slots:
 	void	setXHighBorder(double border);
 	void	setYLowBorder(double border);
 	void	setYHighBorder(double border);
-	void	setXGridStep(double step);
-	void	setYGridStep(double step);
+	//void	setXGridStep(double step);
+	//void	setYGridStep(double step);
 
 protected:
 
@@ -69,6 +69,8 @@ private:
 
 	void			insertGraph(QPixmap& graph, QPixmap templateGraph);
 
+	void			adjXGridStep();
+	void			adjYGridStep();
 
 	static inline QString adjCoord(double value, double eps);
 

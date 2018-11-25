@@ -43,6 +43,11 @@ std::function<double(double)> SignalLibrary::currentFunction() const
 	return _currenFunc;
 }
 
+std::function<double(double)> SignalLibrary::currentSpectre() const
+{
+	return currentSpectrePriv();
+}
+
 void SignalLibrary::init()
 {
 	_view = new GraphView;
@@ -225,7 +230,7 @@ QString SignalLibrary::getSignalName(int type)
 		break;
 	case SignalLibrary::Libsig8: return QStringLiteral("Сигнал 8");
 		break;
-	case SignalLibrary::Libsig9: return QStringLiteral("Сигнал 9");
+	case SignalLibrary::SincPiX: return QStringLiteral("Сигнал 9");
 		break;
 	case SignalLibrary::Libsig10: return QStringLiteral("Сигнал 10");
 		break;
@@ -357,9 +362,9 @@ void SignalLibrary::updateFunction()
 		};
 	}
 	break;
-	case SignalLibrary::Libsig9:
+	case SignalLibrary::SincPiX:
 	{
-		_currenFunc = &libsig9;
+		_currenFunc = &sincPiX;
 	}
 	break;
 	case SignalLibrary::Libsig10:
@@ -584,6 +589,297 @@ void SignalLibrary::updateFunction()
 
 }
 
+std::function<double(double)> SignalLibrary::currentSpectrePriv() const
+{
+	switch (_currentType)
+	{
+	case SignalLibrary::Libsig1:
+	{
+		return [&tau = _currentTau](double x) -> double
+		{
+			return spectr1(x, tau);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig2:
+	{
+		return [&tau = _currentTau](double x) -> double
+		{
+			return spectr2(x, tau);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig3:
+	{
+		return [&tau = _currentTau](double x) -> double
+		{
+			return spectr3(x, tau);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig4:
+	{
+		return [&tau = _currentTau](double x) -> double
+		{
+			return spectr4(x, tau);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig5:
+	{
+		return [&tau = _currentTau](double x) -> double
+		{
+			return spectr5(x, tau);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig6:
+	{
+		return [&tau = _currentTau](double x) -> double
+		{
+			return spectr6(x, tau);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig7:
+	{
+		return [&tau = _currentTau](double x) -> double
+		{
+			return spectr7(x, tau);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig8:
+	{
+		return [&tau = _currentTau](double x) -> double
+		{
+			return spectr8(x, tau);
+		};
+	}
+	break;
+	case SignalLibrary::SincPiX:
+	{
+		return &spectr9;
+	}
+	break;
+	case SignalLibrary::Libsig10:
+	{
+		return &spectr10;
+	}
+	break;
+	case SignalLibrary::Libsig11:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr11(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig12:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr12(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig13:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr13(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig14:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr14(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig15:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr15(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig16:
+	{
+		return [&tau = _currentTau, &a = _currentA](double x) -> double
+		{
+			return spectr16(x, tau, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig17:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr17(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig18:
+	{
+		return [&a = _currentA, &b = _currentB](double x) -> double
+		{
+			return spectr18(x, a, b);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig19:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr19(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig20:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr20(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig21:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr21(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig22:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr22(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig23:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr23(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig24:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr24(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig25:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr25(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig26:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr26(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig27:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr27(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig28:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr28(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig29:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr29(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig30:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr30(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig31:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr31(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig32:
+	{
+		return [&tau = _currentTau](double x) -> double
+		{
+			return spectr32(x, tau);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig33:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr33(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig34:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr34(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig35:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr35(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Libsig36:
+	{
+		return [&a = _currentA](double x) -> double
+		{
+			return spectr36(x, a);
+		};
+	}
+	break;
+	default:
+		break;
+	}
+}
+
 
 double SignalLibrary::libsig1(double t, double tau)
 {
@@ -642,7 +938,7 @@ double SignalLibrary::libsig8(double t, double tau)
 	return y*y;
 }
 
-double SignalLibrary::libsig9(double t)
+double SignalLibrary::sincPiX(double t)
 {
 	if (t == 0.0) return 1.0;
 	t *= M_PI;
@@ -653,7 +949,7 @@ double SignalLibrary::libsig9(double t)
 
 double SignalLibrary::libsig10(double t)
 {
-	const double y = libsig9(t);
+	const double y = sincPiX(t);
 	return y * y;
 }
 
@@ -807,4 +1103,234 @@ double SignalLibrary::libsig36(double t, double a)
 {
 	if (t < 0.0) return 0.0;
 	return (0.5*t*t - 2.0*t + 1.0)*exp(-a * t);
+}
+
+double SignalLibrary::sinc(double x)
+{
+	if (x == 0.0) return 1.0;
+	double z = x;
+	while (z > 1.0e+15) z -= 2 * M_PI;
+	return sin(z) / x;
+}
+
+double SignalLibrary::spectr1(double w, double tau)
+{
+	if (w == 0) return tau;
+	w *= (0.5 * tau);
+	return fabs(tau*sinc(w));
+}
+
+double SignalLibrary::spectr2(double w, double tau)
+{
+	if (w == 0.0) return 0.0;
+	w /= 4.0;
+	double u = w * tau;
+	while (u > 1.0e+15) u -= 2.0*M_PI;
+	return fabs(1.0 / w * sin(u) * sin(u));
+}
+
+double SignalLibrary::spectr3(double w, double tau)
+{
+	w /= 4.0;
+	double u = w * tau;
+	return fabs(0.5*tau * sinc(u) * sinc(u));
+}
+
+double SignalLibrary::spectr4(double w, double tau)
+{
+	double u = w * tau / 3.0;
+	return fabs(2.0*tau / 3.0 * sinc(u)*sinc(u / 2.0));
+}
+
+double SignalLibrary::spectr5(double w, double tau)
+{
+	double z = 1.0 - w * w * tau*tau / (M_PI*M_PI);
+	if (z == 0.0) return 2.0 * tau / M_PI;
+	double u = w * tau / 2.0;
+	while (u > 1.0e+15) u -= 2.0*M_PI;
+	return fabs(2.0*tau / M_PI * cos(u) / z);
+}
+
+double SignalLibrary::spectr6(double w, double tau)
+{
+	double z = 1.0 - w * w * tau*tau / (4.0*M_PI*M_PI);
+	if (z == 0.0) return tau / (4.0*M_PI);
+	return fabs(0.5*tau*sinc(0.5*w*tau) / z);
+}
+
+double SignalLibrary::spectr7(double w, double tau)
+{
+	double z = 1.0 - w * w * tau*tau / (4.0*M_PI*M_PI);
+	if (z == 0.0) return 0.0;
+	w *= (0.25*tau);
+	while (w > 1e+15) w -= 2.0 * M_PI;
+	return fabs(2.0*tau / M_PI * cos(w)*cos(w) / z);
+}
+
+double SignalLibrary::spectr8(double w, double tau)
+{
+	double z = 1.0 - w * w * tau*tau / (16.0*M_PI*M_PI);
+	if (z == 0.0) return 0.0;
+	return fabs(0.5*tau*sinc(w*tau*0.5) / z);
+}
+
+double SignalLibrary::spectr9(double w)
+{
+	if (w < 0.0) return 0.0;
+	if (w > 2.0 * M_PI) return 0.0;
+	return 1.0;
+}
+
+double SignalLibrary::spectr10(double w)
+{
+	if ((w < 0) || (w > 2 * M_PI)) return 0.0;
+	return 1.0 - fabs(w)*0.5 / M_PI;
+}
+
+double SignalLibrary::spectr11(double w, double a)
+{
+	w *= (M_PI / (2 * a));
+	if (w > 700.0) return 0.0;
+	return fabs(M_PI / (a*cosh(w)));
+}
+
+double SignalLibrary::spectr12(double w, double a)
+{
+	w *= M_PI / (2.0*a);
+	double k = 2.0 / a;
+	if (w == 0.0) return k;
+	if (w > 700.0) return 0.0;
+	return fabs(k * w / sinh(w));
+}
+
+double SignalLibrary::spectr13(double w, double a)
+{
+	w *= M_PI / (2.0 * a);
+	if (w > 700.0) return 0.0;
+	return fabs(M_PI*M_PI*0.5 / (a*a) * sinh(w) / (cosh(w)*cosh(w)));
+}
+
+double SignalLibrary::spectr14(double w, double a)
+{
+	double k = 0.5 * M_PI / a;
+	w *= k;
+	if (w > 700.0) return 0.0;
+	return fabs(M_PI*k / (cosh(w)*cosh(w)));
+}
+
+double SignalLibrary::spectr15(double w, double a)
+{
+	return 1.0 / sqrt(a*a + w * w);
+}
+
+double SignalLibrary::spectr16(double w, double tau, double a)
+{
+	double u = w * tau;
+	if (u > 700.0) return 0.0;
+	return sqrt(1.0 + exp(-2.0*a*tau) - 2.0*exp(-a * tau)*cos(u)) / sqrt(a*a + w * w);
+}
+
+double SignalLibrary::spectr17(double w, double a)
+{
+	return 2.0*a / (a*a + w * w);
+}
+
+double SignalLibrary::spectr18(double w, double a, double b)
+{
+	return fabs((b - a) / (sqrt(a*a + w * w)*sqrt(b*b + w * w)));
+}
+
+double SignalLibrary::spectr19(double w, double a)
+{
+	return 1.0 / (a*a + w * w);
+}
+
+double SignalLibrary::spectr20(double w, double a)
+{
+	return 2.0*spectr19(w, a) / sqrt(a*a + w * w);
+}
+
+double SignalLibrary::spectr21(double w, double a)
+{
+	const double res = spectr19(w, a);
+	return 6.0*res*res;
+}
+
+double SignalLibrary::spectr22(double w, double a)
+{
+	return 4.0*spectr21(w, a) / sqrt(a*a + w * w);
+}
+
+double SignalLibrary::spectr23(double w, double a)
+{
+	return sqrt(M_PI / a)*exp(-w * w / (4.0*a));
+}
+
+double SignalLibrary::spectr24(double w, double a)
+{
+	return w * 0.5 / a * spectr23(w, a);
+}
+
+double SignalLibrary::spectr25(double w, double a)
+{
+	return fabs(1 - w * w / (2 * a)) / (2 * a) * spectr23(w, a);
+}
+
+double SignalLibrary::spectr26(double w, double a)
+{
+	return spectr19(w, a)*fabs(w);
+}
+
+double SignalLibrary::spectr27(double w, double a)
+{
+	return 0.5*spectr20(w, a)*fabs(w);
+}
+
+double SignalLibrary::spectr28(double w, double a)
+{
+	return 2.0*spectr27(w, a) / sqrt(a*a + w * w);
+}
+
+double SignalLibrary::spectr29(double w, double a)
+{
+	return 3.0*spectr28(w, a) / sqrt(a*a + w * w);
+}
+
+double SignalLibrary::spectr30(double w, double a)
+{
+	return sqrt(4.0*a*a + w * w)*spectr19(w, a);
+}
+
+double SignalLibrary::spectr31(double w, double a)
+{
+	return sqrt((9.0*a*a + w * w) / (a*a + w * w))*spectr19(w, a);
+}
+
+double SignalLibrary::spectr32(double w, double tau)
+{
+	double w2 = w * w;
+	if (w2 == 0.0) return 2.0 * tau / 3.0;
+	double u = w * tau * 0.5;
+	while (u > 1.0e+15) u -= 2.0 * M_PI;
+	return fabs(8.0 / (tau*w2)*(sinc(w*tau*0.5) - cos(u)));
+}
+
+double SignalLibrary::spectr33(double w, double a)
+{
+	return a * spectr34(w, a);
+}
+
+double SignalLibrary::spectr34(double w, double a)
+{
+	return M_PI * exp(-a * fabs(w));
+}
+
+double SignalLibrary::spectr35(double w, double a)
+{
+	return sqrt((a - 1)*(a - 1) + w * w)*spectr19(w, a);
+}
+
+double SignalLibrary::spectr36(double w, double a)
+{
+	return ((a - 1)*(a - 1) + w * w)*0.5*spectr20(w, a);
 }

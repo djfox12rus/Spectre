@@ -14,6 +14,7 @@ public:
 	SignalEditor(QWidget* parent = nullptr);
 
 	std::function<double(double)>	currentFunction() const;
+	std::pair<double, double>		xRange()const;
 	bool							isFunctionEmpty()const;
 
 signals:

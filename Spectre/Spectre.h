@@ -19,6 +19,8 @@ class Spectre : public QMainWindow
 public:
 	Spectre(QWidget *parent = nullptr);
 
+signals:
+
 private slots:
 	void		openSignalEditor();
 	void		openSignalLibrary();
@@ -29,14 +31,33 @@ private slots:
 
 private:
 
-	std::function<double(double)> _currentSignal;
+	enum SignalType
+	{
+		Pulse,
+		PeriodicPulse,
+		RadioPulse,
+		PeriodicRadioPulse
+	};
+
+	struct SignalParams
+	{
+		SignalType	type{Pulse};
+		double		duration{0.5};
+		int			dutyCycle{5};
+	};
+
+	std::function<double(double)>	_initialSignal;
+	std::function<double(double)>	_initialSpectre;
+	std::pair<double, double>		_initialRange;
 
 	//BaseGraphView*		_view;
 	SignalEditor*		_editor{};
 	SignalLibrary*		_lib{};
-	QDialog*			_signalParams{};
+	QDialog*			_signalParamsDlg{};
+	SignalParams		_signalParams{};
 
 	GraphView*			_currentGraph{};
+	GraphView*			_currentSpectre{};
 
 	void				init();
 	QTabWidget*			initCentralWgt();
@@ -49,4 +70,6 @@ private:
 	SignalEditor*		initEditor();
 	SignalLibrary*		initLibrary();
 	QDialog*			initSignalParams();
+
+	void				processSignalParams();
 };

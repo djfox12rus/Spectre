@@ -4,7 +4,7 @@
 #include <QPolygonF>
 #include <QPen>
 
-static constexpr double precision = 200;
+static constexpr double precision = 500;
 
 GraphView::GraphView(QWidget * parent)
 	:BaseGraphView(parent)

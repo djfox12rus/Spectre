@@ -34,38 +34,42 @@ BaseGraphView::BaseGraphView(QWidget* parent)
 void BaseGraphView::setXLowBorder(double border)
 {
 	_xBorders.first = border;
+	adjXGridStep();
 	updateAndRepaint();
 }
 
 void BaseGraphView::setXHighBorder(double border)
 {
 	_xBorders.second = border;
+	adjXGridStep();
 	updateAndRepaint();
 }
 
 void BaseGraphView::setYLowBorder(double border)
 {
 	_yBorders.first = border;
+	adjYGridStep();
 	updateAndRepaint();
 }
 
 void BaseGraphView::setYHighBorder(double border)
 {
 	_yBorders.second = border;
+	adjYGridStep();
 	updateAndRepaint();
 }
 
-void BaseGraphView::setXGridStep(double step)
-{
-	_xyGridSteps.first = step;
-	updateAndRepaint();
-}
-
-void BaseGraphView::setYGridStep(double step)
-{
-	_xyGridSteps.second = step;
-	updateAndRepaint();
-}
+//void BaseGraphView::setXGridStep(double step)
+//{
+//	_xyGridSteps.first = step;
+//	updateAndRepaint();
+//}
+//
+//void BaseGraphView::setYGridStep(double step)
+//{
+//	_xyGridSteps.second = step;
+//	updateAndRepaint();
+//}
 
 const std::pair<double, double>& BaseGraphView::xBorders()
 {
@@ -238,6 +242,7 @@ std::tuple<QPixmap, QVector<QLineF>, QVector<QLineF>, BaseGraphView::CoordsValue
 	QVector<QLineF> verticalGridLines;
 	QVector<QLineF> verticalPrecGridLines;
 	QLineF zeroX;
+	bool zeroXDrawn = false;
 	double j = offsetX;
 	for (auto i = _xBorders.first; i <= _xBorders.second; i += _xyGridSteps.first, j += realXStep)
 	{
@@ -248,6 +253,7 @@ std::tuple<QPixmap, QVector<QLineF>, QVector<QLineF>, BaseGraphView::CoordsValue
 		else
 		{
 			zeroX.setLine(j, 0, j, templateGraph.height());
+			zeroXDrawn = true;
 		}
 
 		const auto topOffset = graphSize.height() + yTopOffset;
@@ -260,7 +266,7 @@ std::tuple<QPixmap, QVector<QLineF>, QVector<QLineF>, BaseGraphView::CoordsValue
 		xCoords.emplace_back(i, j);
 	}
 
-	_xGraphBorders.second = j - realXStep;
+	_xGraphBorders.second = j - (j > graphSize.width() ? realXStep : 0);
 
 	const auto offsetY = (templateGraph.height() / yPrecisionSteps) / 2 + 1;
 	const auto realYStep = (templateGraph.height() - offsetY * 2) / ySteps;
@@ -272,6 +278,7 @@ std::tuple<QPixmap, QVector<QLineF>, QVector<QLineF>, BaseGraphView::CoordsValue
 	QVector<QLineF> horisontalGridLines;
 	QVector<QLineF> horisontalPrecGridLines;
 	QLineF zeroY;
+	bool zeroYDrawn = false;
 	j = offsetY;
 	for (auto i = _yBorders.second; i >= _yBorders.first; i -= _xyGridSteps.second, j += realYStep)
 	{
@@ -283,6 +290,7 @@ std::tuple<QPixmap, QVector<QLineF>, QVector<QLineF>, BaseGraphView::CoordsValue
 		else
 		{
 			zeroY.setLine(0, j, templateGraph.width(), j);
+			zeroYDrawn = true;
 		}
 
 		for (auto k = 0; k < precisionLines; ++k)
@@ -294,8 +302,20 @@ std::tuple<QPixmap, QVector<QLineF>, QVector<QLineF>, BaseGraphView::CoordsValue
 		}
 		yCoords.emplace_back(i, j);
 	}
-
+	
 	_yGraphBorders.second = j - (j > graphSize.height()? realYStep : 0);
+
+	if (!zeroXDrawn)
+	{
+		auto point = mapToGraph({});
+		zeroX.setLine(point.x(), 0, point.x(), templateGraph.height());
+	}
+
+	if (!zeroYDrawn)
+	{
+		auto point = mapToGraph({});
+		zeroY.setLine(0, point.y(), templateGraph.width(), point.y());
+	}
 
 	{
 		_painter.begin(&templateGraph);
@@ -329,6 +349,16 @@ void BaseGraphView::insertGraph(QPixmap& graph, QPixmap templateGraph)
 	_painter.drawRect(templateRect);
 
 	_painter.end();
+}
+
+void BaseGraphView::adjXGridStep()
+{
+	_xyGridSteps.first = (_xBorders.second - _xBorders.first) / 20;
+}
+
+void BaseGraphView::adjYGridStep()
+{
+	_xyGridSteps.second = (_yBorders.second - _yBorders.first) / 20;
 }
 
 void BaseGraphView::updateAndRepaint()
