@@ -38,6 +38,11 @@ void BaseGraphView::setXLowBorder(double border)
 	updateAndRepaint();
 }
 
+QPixmap BaseGraphView::pixmap() const
+{
+	return _temp;
+}
+
 void BaseGraphView::setXHighBorder(double border)
 {
 	_xBorders.second = border;

@@ -16,6 +16,7 @@ class BaseGraphView : public QWidget
 public:
 	BaseGraphView(QWidget* parent = nullptr);
 
+	QPixmap	pixmap() const;
 
 public slots:
 

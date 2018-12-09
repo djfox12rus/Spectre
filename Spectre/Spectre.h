@@ -29,6 +29,8 @@ private slots:
 	void		reciveLibFunction();
 	void		reciveEditorFunction();
 
+	void		saveAs();
+
 private:
 
 	enum SignalType
@@ -39,10 +41,16 @@ private:
 		PeriodicRadioPulse
 	};
 
+	enum CurrentTab
+	{
+		SignalTab,
+		SpectreTab
+	};
+
 	struct SignalParams
 	{
 		SignalType	type{Pulse};
-		double		duration{0.5};
+		double		duration{1};
 		int			dutyCycle{5};
 	};
 
@@ -58,6 +66,8 @@ private:
 
 	GraphView*			_currentGraph{};
 	GraphView*			_currentSpectre{};
+
+	CurrentTab			_currentTab{ SignalTab };
 
 	void				init();
 	QTabWidget*			initCentralWgt();

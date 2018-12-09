@@ -878,6 +878,11 @@ std::function<double(double)> SignalLibrary::currentSpectrePriv() const
 	default:
 		break;
 	}
+
+	return [](double x)->double
+	{
+		return x;
+	};
 }
 
 

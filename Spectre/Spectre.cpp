@@ -15,6 +15,9 @@
 #include <QPushButton>
 #include <QMargins>
 #include <QGridLayout>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QImage>
 
 #include "GraphView.h"
 #include "SignalEditor.h"
@@ -30,6 +33,7 @@ static const QString paramsMenuStr = QStringLiteral("Параметры");
 
 static const QString signalEditorStr = QStringLiteral("Задать графически");
 static const QString signalLibStr = QStringLiteral("Библиотека сигналов");
+static const QString signalSave = QStringLiteral("Сохранить как...");
 static const QString exitStr = QStringLiteral("Выход");
 
 static const QString singlePulseStr = QStringLiteral("Одиночный импульс");
@@ -115,6 +119,16 @@ void Spectre::reciveEditorFunction()
 	processSignalParams();
 }
 
+void Spectre::saveAs()
+{
+	auto title = QStringLiteral("Сохранить ") + (_currentTab == SignalTab ? QStringLiteral("сигнал") : QStringLiteral("Спектр"));
+	auto defaultName = _currentTab == SignalTab ? QStringLiteral("Сигнал") : QStringLiteral("Спектр");
+	auto fileName = QFileDialog::getSaveFileName(this, title, "/home/" + defaultName, QStringLiteral("Изображения ") + "(*.png *.jpg)");
+
+	QImage image = (_currentTab == SignalTab ? _currentGraph->pixmap() : _currentSpectre->pixmap()).toImage();
+	image.save(fileName);
+}
+
 void Spectre::init()
 {
 
@@ -139,6 +153,10 @@ QTabWidget * Spectre::initCentralWgt()
 	centralWgt->addTab(initSignalViewTab(), signalTabStr);
 	centralWgt->addTab(initSpectreViewTab(), spectreTabStr);
 	centralWgt->setContentsMargins(0,0,0,0);
+	connect(centralWgt, &QTabWidget::currentChanged, this, [&current = _currentTab](int index)
+	{
+		current = CurrentTab(index);
+	});
 	return centralWgt;
 }
 
@@ -161,7 +179,7 @@ QWidget * Spectre::initSignalViewTab()
 	});
 
 	auto yLow = new QDoubleSpinBox;
-	yLow->setRange(-std::numeric_limits<double>::max(), -0.1);
+	yLow->setRange(-std::numeric_limits<double>::max(), 0);
 	yLow->setValue(-1);
 	yLow->setSingleStep(0.1);
 	yLow->setMaximumWidth(45);
@@ -186,7 +204,7 @@ QWidget * Spectre::initSignalViewTab()
 	});
 
 	auto xLow = new QDoubleSpinBox;
-	xLow->setRange(-std::numeric_limits<double>::max(), -0.1);
+	xLow->setRange(-std::numeric_limits<double>::max(), 0);
 	xLow->setValue(-5);
 	xLow->setSingleStep(0.1);
 	xLow->setMaximumWidth(45);
@@ -227,7 +245,7 @@ QWidget * Spectre::initSpectreViewTab()
 	});
 
 	auto yLow = new QDoubleSpinBox;
-	yLow->setRange(-std::numeric_limits<double>::max(), -0.1);
+	yLow->setRange(-std::numeric_limits<double>::max(), -0);
 	yLow->setValue(-1);
 	yLow->setSingleStep(0.1);
 	yLow->setMaximumWidth(45);
@@ -252,7 +270,7 @@ QWidget * Spectre::initSpectreViewTab()
 	});
 
 	auto xLow = new QDoubleSpinBox;
-	xLow->setRange(-std::numeric_limits<double>::max(), -0.1);
+	xLow->setRange(-std::numeric_limits<double>::max(), -0);
 	xLow->setValue(-5);
 	xLow->setSingleStep(0.1);
 	xLow->setMaximumWidth(45);
@@ -285,6 +303,13 @@ QList<QAction*> Spectre::initSignalActions()
 	acts.push_back(new QAction(QIcon(":/Spectre/Resources/black-library.png"), signalLibStr, this));
 	acts.back()->setShortcut(Qt::CTRL + Qt::Key_L);
 	connect(acts.back(), &QAction::triggered, this, &Spectre::openSignalLibrary);
+
+	acts.push_back(new QAction(this));
+	acts.back()->setSeparator(true);
+
+	acts.push_back(new QAction(QIcon(":/Spectre/Resources/save-icon.png"), signalSave, this));
+	acts.back()->setShortcuts(QKeySequence::SaveAs);
+	connect(acts.back(), &QAction::triggered, this, &Spectre::saveAs);
 
 	acts.push_back(new QAction(this));
 	acts.back()->setSeparator(true);
@@ -419,7 +444,7 @@ void Spectre::processSignalParams()
 	{
 		auto pulsFunc = [&initFunc = _initialSignal, &initRange = _initialRange, &duration = _signalParams.duration](double x) -> double
 		{
-			if (x < initRange.first * duration || x >  initRange.second * duration) return 0.0;
+//			if (x < initRange.first * duration || x >  initRange.second * duration) return 0.0;
 			return initFunc(x / duration);
 		};
 		_currentGraph->setFunction(pulsFunc);
