@@ -6,6 +6,12 @@
 #include <math.h>
 //#include <corecrt_math_defines.h>
 
+#ifdef PI_ADJ
+#define ADJUST_BY_PI(x) x *= M_PI
+#else
+#define ADJUST_BY_PI(x)
+#endif
+
 #include <QMenu>
 #include <QBoxLayout>
 #include <QComboBox>
@@ -46,6 +52,11 @@ std::function<double(double)> SignalLibrary::currentFunction() const
 std::function<double(double)> SignalLibrary::currentSpectre() const
 {
 	return currentSpectrePriv();
+}
+
+double SignalLibrary::currentTau() const
+{
+	return _currentTau;
 }
 
 void SignalLibrary::init()
@@ -1121,6 +1132,7 @@ double SignalLibrary::sinc(double x)
 double SignalLibrary::spectr1(double w, double tau)
 {
 	if (w == 0) return tau;
+	ADJUST_BY_PI(w);
 	w *= (0.5 * tau);
 	return fabs(tau*sinc(w));
 }
@@ -1128,6 +1140,7 @@ double SignalLibrary::spectr1(double w, double tau)
 double SignalLibrary::spectr2(double w, double tau)
 {
 	if (w == 0.0) return 0.0;
+	ADJUST_BY_PI(w);
 	w /= 4.0;
 	double u = w * tau;
 	while (u > 1.0e+15) u -= 2.0*M_PI;
@@ -1136,6 +1149,7 @@ double SignalLibrary::spectr2(double w, double tau)
 
 double SignalLibrary::spectr3(double w, double tau)
 {
+	ADJUST_BY_PI(w);
 	w /= 4.0;
 	double u = w * tau;
 	return fabs(0.5*tau * sinc(u) * sinc(u));
@@ -1149,6 +1163,7 @@ double SignalLibrary::spectr4(double w, double tau)
 
 double SignalLibrary::spectr5(double w, double tau)
 {
+	ADJUST_BY_PI(w);
 	double z = 1.0 - w * w * tau*tau / (M_PI*M_PI);
 	if (z == 0.0) return 2.0 * tau / M_PI;
 	double u = w * tau / 2.0;
@@ -1158,6 +1173,7 @@ double SignalLibrary::spectr5(double w, double tau)
 
 double SignalLibrary::spectr6(double w, double tau)
 {
+	ADJUST_BY_PI(w);
 	double z = 1.0 - w * w * tau*tau / (4.0*M_PI*M_PI);
 	if (z == 0.0) return tau / (4.0*M_PI);
 	return fabs(0.5*tau*sinc(0.5*w*tau) / z);

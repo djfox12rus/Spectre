@@ -56,13 +56,15 @@ private:
 
 	std::function<double(double)>	_initialSignal;
 	std::function<double(double)>	_initialSpectre;
-	std::pair<double, double>		_initialRange;
+	//std::pair<double, double>		_initialRange;
 
 	//BaseGraphView*		_view;
 	SignalEditor*		_editor{};
 	SignalLibrary*		_lib{};
 	QDialog*			_signalParamsDlg{};
 	SignalParams		_signalParams{};
+
+	double				_tau{0};
 
 	GraphView*			_currentGraph{};
 	GraphView*			_currentSpectre{};
@@ -82,4 +84,6 @@ private:
 	QDialog*			initSignalParams();
 
 	void				processSignalParams();
+
+	static std::function<double(double)> makeFourierFunction(std::function<double(double)>& initSignal, double tau);
 };

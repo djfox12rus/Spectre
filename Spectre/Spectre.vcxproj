@@ -114,6 +114,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BaseGraphView.cpp" />
+    <ClCompile Include="FourierFunction.cpp" />
     <ClCompile Include="GraphEditor.cpp" />
     <ClCompile Include="GraphFunction.cpp" />
     <ClCompile Include="GraphView.cpp" />
@@ -137,6 +138,8 @@
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="FFT.h" />
+    <ClInclude Include="FourierFunction.h" />
     <ClInclude Include="resource.h" />
     <QtMoc Include="GraphEditor.h">
       <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName)\.;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets</IncludePath>

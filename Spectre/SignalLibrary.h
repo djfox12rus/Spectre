@@ -16,6 +16,8 @@ public:
 	std::function<double(double)>	currentFunction() const;
 	std::function<double(double)>	currentSpectre() const;
 
+	double		currentTau() const;
+
 signals:
 	void	setTauVisible(bool visible);
 	void	setAVisible(bool visible);

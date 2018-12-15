@@ -56,6 +56,11 @@ void GraphEditor::mouseMoveEvent(QMouseEvent * event)
 	{
 		_currentLine.push_back(QPointF(xBorders().first, 0));
 	}
+	else if (_currentLine.size() == 1)
+	{
+		_currentLine.pop_back();
+		_currentLine.push_back(QPointF(xBorders().first, 0));
+	}
 
 	_pos = event->localPos();
 	const auto realPos = mapFromGraph(mapWdgtToGraph(_pos));

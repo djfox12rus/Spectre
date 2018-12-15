@@ -9,12 +9,13 @@ class GraphView :
 public:
 	GraphView(QWidget* parent = nullptr);
 
-	void	setFunction(std::function<double(double)> func);
+	void	setFunction(std::function<double(double)> func, double omega = -1);
 
 protected:
 	QPixmap updateGraph(QPixmap temp) override;
 
 private:
 	std::function<double(double)>		_func;
+	double								_omega{-1};
 };
 

@@ -1,9 +1,12 @@
 #include "SignalEditor.h"
 
+#include <limits>
+
 #include <QToolBar>
 #include <QMenuBar>
 #include <QAction>
 #include <QList>
+#include <QDoubleSpinBox>
 
 #include "GraphEditor.h"
 #include "GraphFunction.h"
@@ -25,7 +28,12 @@ std::function<double(double)> SignalEditor::currentFunction() const
 
 std::pair<double, double> SignalEditor::xRange() const
 {
-	return {-5,5};
+	return {-_tau, _tau};
+}
+
+double SignalEditor::tau() const
+{
+	return _tau;
 }
 
 bool SignalEditor::isFunctionEmpty() const
@@ -36,11 +44,13 @@ bool SignalEditor::isFunctionEmpty() const
 void SignalEditor::init()
 {
 	_editor = new GraphEditor;
+	setEditorRange(_tau);
 
 	setCentralWidget(_editor);
 
 	auto actions = initActions();
 	addToolBar(initToolBar(actions));
+	addToolBar(initTauBar());
 	setMenuBar(initMenuBar(actions));
 
 	//TODO: Add menus and stuff
@@ -79,6 +89,25 @@ QToolBar * SignalEditor::initToolBar(const QList<QAction*>& acts)
 	return toolBar;
 }
 
+QToolBar * SignalEditor::initTauBar()
+{
+	auto tauSpinBox = new QDoubleSpinBox;
+	tauSpinBox->setRange(0.1, std::numeric_limits<double>::max());
+	tauSpinBox->setValue(_tau);
+	tauSpinBox->setSingleStep(0.1);
+
+	connect(tauSpinBox, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double b)
+	{
+		_tau = b;
+		setEditorRange(_tau);
+	});
+
+	auto bar = new QToolBar;
+	bar->addWidget(tauSpinBox);
+
+	return bar;
+}
+
 QMenuBar * SignalEditor::initMenuBar(const QList<QAction*>& acts)
 {
 	auto menuBar = new QMenuBar;
@@ -88,5 +117,11 @@ QMenuBar * SignalEditor::initMenuBar(const QList<QAction*>& acts)
 	menu->addActions(acts);
 
 	return menuBar;
+}
+
+void SignalEditor::setEditorRange(double t)
+{
+	_editor->setXLowBorder(-_tau);
+	_editor->setXHighBorder(_tau);
 }
 

@@ -1,6 +1,8 @@
 #include "Spectre.h"
 
+#define _USE_MATH_DEFINES
 #include <limits>
+#include <math.h>
 
 #include <QTabWidget>
 #include <QToolBar>
@@ -22,6 +24,9 @@
 #include "GraphView.h"
 #include "SignalEditor.h"
 #include "SignalLibrary.h"
+
+#include "FFT.h"
+#include "FourierFunction.h"
 
 static const QString titleStr = QStringLiteral("Спектральный анализ сигналов");
 
@@ -50,6 +55,8 @@ static const QString acceptStr = QStringLiteral("Принять");
 static const QString rejectStr = QStringLiteral("Отмена");
 
 static constexpr std::pair<double, double> initialGraphRange = { -5, 5 };
+
+static constexpr int sampleCount = 2048;
 
 Spectre::Spectre(QWidget *parent) 
 	: QMainWindow(parent)
@@ -97,8 +104,10 @@ void Spectre::openParamsDialog()
 void Spectre::reciveLibFunction()
 {
 	_initialSignal = _lib->currentFunction();
+	//_initialRange = { -5,5 };
+	_tau = _lib->currentTau();
 	_initialSpectre = _lib->currentSpectre();
-	_initialRange = { -5,5 };
+	//_initialSpectre = makeFourierFunction(_initialSignal, _tau);
 	processSignalParams();
 }
 
@@ -112,9 +121,14 @@ void Spectre::reciveEditorFunction()
 	else
 	{
 		_initialSignal = _editor->currentFunction();
-		_initialRange = _editor->xRange();
-		//TODo: FFT
-		_initialSpectre = {};
+		auto xRange = _editor->xRange();
+		_tau = _editor->tau();
+
+
+		//_tau = _lib->currentTau();
+		//_initialRange = _editor->xRange();
+		//TODO: FFT
+		_initialSpectre = makeFourierFunction(_initialSignal, _tau);
 	}
 	processSignalParams();
 }
@@ -442,9 +456,8 @@ void Spectre::processSignalParams()
 	{
 	case Spectre::Pulse:
 	{
-		auto pulsFunc = [&initFunc = _initialSignal, &initRange = _initialRange, &duration = _signalParams.duration](double x) -> double
+		auto pulsFunc = [&initFunc = _initialSignal, &duration = _signalParams.duration](double x) -> double
 		{
-//			if (x < initRange.first * duration || x >  initRange.second * duration) return 0.0;
 			return initFunc(x / duration);
 		};
 		_currentGraph->setFunction(pulsFunc);
@@ -459,32 +472,32 @@ void Spectre::processSignalParams()
 	break;
 	case Spectre::PeriodicPulse:
 	{
-		constexpr double initLen = initialGraphRange.second - initialGraphRange.first;
-		const double tau = initLen / (3 * _signalParams.dutyCycle);
+		double period = _tau * _signalParams.dutyCycle;
 		auto periodsFunc = [&initFunc = _initialSignal
-			, tau = tau
-			, period = tau * _signalParams.dutyCycle
-			, tau_2 = tau/2
-			, k = (2 / tau)*((_initialRange.second - _initialRange.first) / 2)
-			, b = (_initialRange.second - _initialRange.first) / 2 + _initialRange.first](double x) -> double
+			, tau = _tau
+			, period = period]
+			(double x) -> double
 		{
-			if (x > (-period - tau_2) && x < (-period + tau_2))
+			if (x < 0)
 			{
-				return initFunc((x + period) * k + b);
+				while (x < -period / 2)
+				{
+					x += period;
+				}
 			}
-			if (x > (-tau_2) && x < tau_2)
+			else
 			{
-				return initFunc(x * k + b);
+				while (x > period / 2)
+				{
+					x -= period;
+				}
 			}
-			if (x > (period - tau_2) && x < (period + tau_2))
-			{
-				return initFunc((x - period) * k + b);
-			}
-			return 0.0;
+			if (x < -tau / 2 && x > tau / 2) return 0.0;
+			return initFunc(x);
 		};
-		_currentGraph->setFunction(periodsFunc);
 
-		_currentSpectre->setFunction(_initialSpectre);
+		_currentGraph->setFunction(periodsFunc);
+		_currentSpectre->setFunction(_initialSpectre, 2 * M_PI / period);
 	}
 		break;
 	case Spectre::RadioPulse:
@@ -494,4 +507,17 @@ void Spectre::processSignalParams()
 	default:
 		break;
 	}
+}
+
+std::function<double(double)> Spectre::makeFourierFunction(std::function<double(double)>& initSignal, double tau)
+{
+	std::pair<double, double> range{ -tau, tau };
+	double step = 2 * tau / sampleCount;
+	std::vector<double> samples;
+	for (int i = 0;  i < sampleCount; ++i)
+	{
+		samples.push_back(initSignal(range.first + i* step));
+	}
+
+	return FourierFunction{FFT::lowFreqFilter( FFT::rotate( FFT::transform(samples))), tau};
 }
