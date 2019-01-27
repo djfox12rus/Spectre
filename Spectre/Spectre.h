@@ -5,10 +5,13 @@
 #include <QtWidgets/QMainWindow>
 #include <QList>
 
+//#define FFT_TEST
+
 class SignalEditor;
 class SignalLibrary;
 class QTabWidget;
 class QDialog;
+class QDoubleSpinBox;
 
 class GraphView;
 
@@ -20,6 +23,11 @@ public:
 	Spectre(QWidget *parent = nullptr);
 
 signals:
+	void		setCoordsValueVisible(bool show);
+	void		updateParamsDlg();
+
+protected:
+	void		wheelEvent(QWheelEvent* ev) override;
 
 private slots:
 	void		openSignalEditor();
@@ -51,7 +59,29 @@ private:
 	{
 		SignalType	type{Pulse};
 		double		duration{1};
-		int			dutyCycle{5};
+		double		period{2};
+		int			carrierFreq{ 1000 };
+#ifdef FFT_TEST
+		bool		useFFT{true};
+#endif
+	};
+
+	struct SignalBorders
+	{
+		QDoubleSpinBox*	yHigh{};
+		QDoubleSpinBox*	yLow{};
+		QDoubleSpinBox*	xHigh{};
+		QDoubleSpinBox*	xLow{};
+	};
+	
+	struct SpectreBorders
+	{
+		QDoubleSpinBox*	yHigh{};
+#ifdef FFT_TEST
+		QDoubleSpinBox*	yLow{};
+#endif
+		QDoubleSpinBox*	xHigh{};
+		QDoubleSpinBox*	xLow{};
 	};
 
 	std::function<double(double)>	_initialSignal;
@@ -70,6 +100,8 @@ private:
 	GraphView*			_currentSpectre{};
 
 	CurrentTab			_currentTab{ SignalTab };
+	SignalBorders		_signalBorders;
+	SpectreBorders		_spectreBorders;
 
 	void				init();
 	QTabWidget*			initCentralWgt();
@@ -85,5 +117,10 @@ private:
 
 	void				processSignalParams();
 
+	void				scrollX(int step);
+	void				scrollY(int step);
+
 	static std::function<double(double)> makeFourierFunction(std::function<double(double)>& initSignal, double tau);
+
+	static double		updateValue(double initVal, int step);
 };

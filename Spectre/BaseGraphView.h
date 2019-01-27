@@ -24,6 +24,12 @@ public slots:
 	void	setXHighBorder(double border);
 	void	setYLowBorder(double border);
 	void	setYHighBorder(double border);
+	
+
+	void	setXAxisName(const QString& name);
+	void	setYAxisName(const QString& name);
+
+	void	setShowCoordsValues(bool show);
 	//void	setXGridStep(double step);
 	//void	setYGridStep(double step);
 
@@ -55,6 +61,11 @@ private:
 	QPixmap			_templateGraph;
 	QPainter		_painter;
 
+	QString			_yAxisName;
+	QString			_xAxisName;
+
+	bool			_showCoordsValues{true};
+
 	std::pair<double, double>	_xBorders {-5, 5};
 	std::pair<double, double>	_yBorders {-1.0, 1.0};
 	std::pair<double, double>	_xyGridSteps{0.5, 0.1};
@@ -65,7 +76,7 @@ private:
 	QPixmap			makeTemplatePix(QSize newSize);
 
 	using			CoordsValues = std::vector<std::pair<double, double>>;
-	std::tuple<QPixmap, QVector<QLineF>, QVector<QLineF>, CoordsValues, CoordsValues>
+	std::tuple<QPixmap, QVector<QLineF>, QVector<QLineF>, CoordsValues, CoordsValues, QPointF>
 					makeTemplateGraphPix(QSize graphSize);
 
 	void			insertGraph(QPixmap& graph, QPixmap templateGraph);

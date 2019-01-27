@@ -25,6 +25,8 @@
 #include <QMargins>
 
 static const QString titleStr = QStringLiteral("Библиотека сигналов");
+static constexpr double		epsilon = std::numeric_limits<double>::epsilon() * 10;
+static double sqrt_8 = std::sqrt(8);
 
 SignalLibrary::SignalLibrary(QWidget * parent)
 {
@@ -41,7 +43,7 @@ void SignalLibrary::setFunctionType(int type)
 	emit setTauVisible(type >= Libsig1 && type <= Libsig8 || type == Libsig16 || type == Libsig32);
 	emit setAVisible(type >= Libsig11 && type<= Libsig36 && type != Libsig32);
 	emit setBVisible(type == Libsig18);
-
+	emit setFVisible(type == Sin);
 }
 
 std::function<double(double)> SignalLibrary::currentFunction() const
@@ -62,6 +64,7 @@ double SignalLibrary::currentTau() const
 void SignalLibrary::init()
 {
 	_view = new GraphView;
+	connect(this, &SignalLibrary::setCoordsValueVisible, _view, &GraphView::setShowCoordsValues);
 	auto chooseToolBox = initChooseFuncToolBar();
 
 	auto actions = initActions();
@@ -133,17 +136,31 @@ QToolBar * SignalLibrary::initChooseFuncToolBar()
 		updateFunction();
 	});
 
+	auto FSpinBox = new QSpinBox;
+	FSpinBox->setMaximumWidth(50);
+	FSpinBox->setRange(0, std::numeric_limits<int>::max());
+	FSpinBox->setSingleStep(1);
+	FSpinBox->setValue(_currentF);
+	connect(FSpinBox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this](int b)
+	{
+		_currentF = b;
+		updateFunction();
+	});
+
 	auto tauLbl = new QLabel(QStringLiteral("Tau"));
 	auto aLbl = new QLabel(QStringLiteral("A"));
 	auto bLbl = new QLabel(QStringLiteral("B"));
+	auto fLbl = new QLabel(QStringLiteral("F"));
 
 	connect(this, &SignalLibrary::setTauVisible, tauLbl, &QLabel::setVisible);
 	connect(this, &SignalLibrary::setAVisible, aLbl, &QLabel::setVisible);
 	connect(this, &SignalLibrary::setBVisible, bLbl, &QLabel::setVisible);
+	connect(this, &SignalLibrary::setFVisible, fLbl, &QLabel::setVisible);
 
 	connect(this, &SignalLibrary::setTauVisible, tauSpinBox, &QDoubleSpinBox::setVisible);
 	connect(this, &SignalLibrary::setAVisible, ASpinBox, &QDoubleSpinBox::setVisible);
 	connect(this, &SignalLibrary::setBVisible, BSpinBox, &QDoubleSpinBox::setVisible);
+	connect(this, &SignalLibrary::setFVisible, FSpinBox, &QDoubleSpinBox::setVisible);
 
 	auto helperLayout = new QHBoxLayout;
 	helperLayout->addWidget(chooseFuncBox);
@@ -161,6 +178,11 @@ QToolBar * SignalLibrary::initChooseFuncToolBar()
 	tempLayout = new QHBoxLayout;
 	tempLayout->addWidget(bLbl);
 	tempLayout->addWidget(BSpinBox);
+	helperLayout->addLayout(tempLayout);
+
+	tempLayout = new QHBoxLayout;
+	tempLayout->addWidget(fLbl);
+	tempLayout->addWidget(FSpinBox);
 	helperLayout->addLayout(tempLayout);
 
 	auto helperWgt = new QWidget;
@@ -296,6 +318,8 @@ QString SignalLibrary::getSignalName(int type)
 	case SignalLibrary::Libsig35: return QStringLiteral("Сигнал 35");
 		break;
 	case SignalLibrary::Libsig36: return QStringLiteral("Сигнал 36");
+		break;
+	case SignalLibrary::Sin: return QStringLiteral("Синус");
 		break;
 	case SignalLibrary::LibsigCount:
 		break;
@@ -588,6 +612,14 @@ void SignalLibrary::updateFunction()
 		_currenFunc = [&a = _currentA](double x) -> double
 		{
 			return libsig36(x, a);
+		};
+	}
+	break;
+	case SignalLibrary::Sin:
+	{
+		_currenFunc = [&f = _currentF](double x) -> double
+		{
+			return libsin(x, f);
 		};
 	}
 	break;
@@ -886,6 +918,14 @@ std::function<double(double)> SignalLibrary::currentSpectrePriv() const
 		};
 	}
 	break;
+	case SignalLibrary::Sin:
+	{
+		return [&f = _currentF](double x) -> double
+		{
+			return spectr_sin(x, f);
+		};
+	}
+	break;
 	default:
 		break;
 	}
@@ -1121,6 +1161,11 @@ double SignalLibrary::libsig36(double t, double a)
 	return (0.5*t*t - 2.0*t + 1.0)*exp(-a * t);
 }
 
+double SignalLibrary::libsin(double t, double f)
+{
+	return std::sin(2*M_PI*f*t);
+}
+
 double SignalLibrary::sinc(double x)
 {
 	if (x == 0.0) return 1.0;
@@ -1164,8 +1209,15 @@ double SignalLibrary::spectr4(double w, double tau)
 double SignalLibrary::spectr5(double w, double tau)
 {
 	ADJUST_BY_PI(w);
+
 	double z = 1.0 - w * w * tau*tau / (M_PI*M_PI);
-	if (z == 0.0) return 2.0 * tau / M_PI;
+	if (z == 0.0) //return 2.0 * tau / M_PI;
+	{
+		//auto a = (2 * tau / M_PI) * (1 + w * w * tau * tau *(1 / (M_PI * M_PI) - 1 / 8.0));
+		//return a;
+		w += epsilon * 100;
+		z = 1.0 - w * w * tau*tau / (M_PI*M_PI);
+	}
 	double u = w * tau / 2.0;
 	while (u > 1.0e+15) u -= 2.0*M_PI;
 	return fabs(2.0*tau / M_PI * cos(u) / z);
@@ -1175,7 +1227,11 @@ double SignalLibrary::spectr6(double w, double tau)
 {
 	ADJUST_BY_PI(w);
 	double z = 1.0 - w * w * tau*tau / (4.0*M_PI*M_PI);
-	if (z == 0.0) return tau / (4.0*M_PI);
+	if (z == 0.0) //return tau / (4.0*M_PI);
+	{
+		w += epsilon * 100;
+		z = 1.0 - w * w * tau*tau / (4.0*M_PI*M_PI);
+	}
 	return fabs(0.5*tau*sinc(0.5*w*tau) / z);
 }
 
@@ -1289,7 +1345,7 @@ double SignalLibrary::spectr23(double w, double a)
 
 double SignalLibrary::spectr24(double w, double a)
 {
-	return w * 0.5 / a * spectr23(w, a);
+	return abs(w) * 0.5 / a * spectr23(w, a);
 }
 
 double SignalLibrary::spectr25(double w, double a)
@@ -1330,7 +1386,7 @@ double SignalLibrary::spectr31(double w, double a)
 double SignalLibrary::spectr32(double w, double tau)
 {
 	double w2 = w * w;
-	if (w2 == 0.0) return 2.0 * tau / 3.0;
+	if (std::abs(w2) < epsilon) return 2.0 * tau / 3.0;
 	double u = w * tau * 0.5;
 	while (u > 1.0e+15) u -= 2.0 * M_PI;
 	return fabs(8.0 / (tau*w2)*(sinc(w*tau*0.5) - cos(u)));
@@ -1355,3 +1411,12 @@ double SignalLibrary::spectr36(double w, double a)
 {
 	return ((a - 1)*(a - 1) + w * w)*0.5*spectr20(w, a);
 }
+
+double SignalLibrary::spectr_sin(double w, double f)
+{
+	static constexpr auto epsilon2 = epsilon * 1000000000000;
+	if (std::abs(std::abs(w) - 2 * M_PI*f) < epsilon2) return 1;
+	return 0.0;
+}
+
+

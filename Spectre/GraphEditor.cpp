@@ -14,12 +14,19 @@ GraphEditor::GraphEditor(QWidget * parent)
 void GraphEditor::discard()
 {
 	_currentLine.clear();
+	_saveAvail = false;
 	updateAndRepaint();
 }
 
 const QPolygonF & GraphEditor::currentLine() const
 {
 	return _currentLine;
+}
+
+void GraphEditor::setCurrentLine(const QPolygonF & line)
+{
+	_currentLine = line;
+	redrawGraph();
 }
 
 QPixmap GraphEditor::updateGraph(QPixmap temp)
@@ -55,11 +62,20 @@ void GraphEditor::mouseMoveEvent(QMouseEvent * event)
 	if (_currentLine.empty())
 	{
 		_currentLine.push_back(QPointF(xBorders().first, 0));
+		
 	}
 	else if (_currentLine.size() == 1)
 	{
 		_currentLine.pop_back();
 		_currentLine.push_back(QPointF(xBorders().first, 0));
+	}
+	else
+	{
+		if (!_saveAvail)
+		{
+			emit saveAvailable();
+			_saveAvail = true;
+		}
 	}
 
 	_pos = event->localPos();
@@ -108,6 +124,14 @@ void GraphEditor::mousePressEvent(QMouseEvent * event)
 			if (_currentLine.empty())
 			{
 				_currentLine.push_back(QPointF(xBorders().first, 0));
+			}
+			else
+			{
+				if (!_saveAvail)
+				{
+					emit saveAvailable();
+					_saveAvail = true;
+				}
 			}
 			auto pos = event->localPos();
 			auto lastPos = mapGraphToWdgt(mapToGraph(_currentLine.back()));

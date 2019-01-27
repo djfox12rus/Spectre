@@ -4,113 +4,95 @@
 
 #include <vector>
 #include <cmath>
+#include <complex>
+#include <cstdio>
+#include <algorithm>
 
 struct FFT
 {
-
+	static constexpr int sampleCount = 4096;
 	static constexpr double TwoPi = M_PI * 2;
 
-	static std::vector<double> transform(const std::vector<double>& in)
+	using ComplexSignal = std::vector<std::complex<double>>;
+	using RealSignal = std::vector<double>;
+
+	// separate even/odd elements to lower/upper halves of array respectively.
+	// Due to Butterfly combinations, this turns out to be the simplest way 
+	// to get the job done without clobbering the wrong elements.
+	template<class RandIt>
+	static void separate(RandIt begin, size_t n)
 	{
-		int i, j, n, m, Mmax, Istp;
-		double Tmpr, Tmpi, Wtmp, Theta;
-		double Wpr, Wpi, Wr, Wi;
-		const auto sz = in.size();
+		ComplexSignal b;
+		b.resize(n / 2);
+		for (int i = 0; i < n / 2; i++)    // copy all odd elements to heap storage
+			b[i] = begin[i * 2 + 1];
+		for (int i = 0; i < n / 2; i++)    // copy all even elements to lower-half of a[]
+			begin[i] = begin[i * 2];
+		for (int i = 0; i < n / 2; i++)    // copy all odd (from heap) to upper-half of a[]
+			begin[i + n / 2] = b[i];
+	}
 
-		n = sz * 2;
-		std::vector<double> temp(n);
 
-		for (i = 0; i < n; i += 2)
-		{
-			temp[i] = 0;
-			temp[i + 1] = in[i / 2];
+	// N must be a power-of-2, or bad things will happen.
+	// Currently no check for this condition.
+	//
+	// N input samples in X[] are FFT'd and results left in X[].
+	// Because of Nyquist theorem, N samples means 
+	// only first N/2 FFT results in X[] are the answer.
+	// (upper half of X[] is a reflection with no new information).
+	template<class RandIt>
+	static void fft(RandIt begin, size_t N)
+	{
+		using namespace std;
+		if (N < 2) {
+			// bottom of recursion.
+			// Do nothing here, because already X[0] = x[0]
 		}
-
-		i = 1; j = 1;
-		while (i < n)
-		{
-			if (j > i)
-			{
-				Tmpr = temp[i]; temp[i] = temp[j]; temp[j] = Tmpr;
-				Tmpr = temp[i + 1]; temp[i + 1] = temp[j + 1]; temp[j + 1] = Tmpr;
+		else {
+			separate(begin, N);      // all evens to lower half, all odds to upper half
+			fft(begin, N / 2);   // recurse even items
+			fft(begin + N / 2, N / 2);   // recurse odd  items
+			// combine results of two half recursions
+			for (int k = 0; k < N / 2; k++) {
+				complex<double> e = begin[k];   // even
+				complex<double> o = begin[k + N / 2];   // odd
+							 // w is the "twiddle-factor"
+				complex<double> w = exp(complex<double>(0, -2.*M_PI*k / N));
+				begin[k] = e + w * o;
+				begin[k + N / 2] = e - w * o;
 			}
-			i = i + 2; m = sz;
-			while ((m >= 2) && (j > m))
-			{
-				j = j - m; m = m >> 1;
-			}
-			j = j + m;
 		}
+	}
 
-		Mmax = 2;
-		while (n > Mmax)
-		{
-			Theta = -TwoPi / Mmax; Wpi = std::sin(Theta);
-			Wtmp = std::sin(Theta / 2); Wpr = Wtmp * Wtmp * 2;
-			Istp = Mmax * 2; Wr = 1; Wi = 0; m = 1;
-
-			while (m < Mmax)
-			{
-				i = m; m = m + 2; Tmpr = Wr; Tmpi = Wi;
-				Wr = Wr - Tmpr * Wpr - Tmpi * Wpi;
-				Wi = Wi + Tmpr * Wpi - Tmpi * Wpr;
-
-				while (i < n)
-				{
-					j = i + Mmax;
-					Tmpr = Wr * temp[j] - Wi * temp[j - 1];
-					Tmpi = Wi * temp[j] + Wr * temp[j - 1];
-
-					temp[j] = temp[i] - Tmpr; temp[j - 1] = temp[i - 1] - Tmpi;
-					temp[i] = temp[i] + Tmpr; temp[i - 1] = temp[i - 1] + Tmpi;
-					i = i + Istp;
-				}
-			}
-
-			Mmax = Istp;
-		}
-
-		std::vector<double> out(sz);
-		for (i = 0; i < sz; i++)
-		{
-			j = i * 2;
-			out[i] = 2 * std::sqrt(temp[j]* temp[j] + temp[j + 1] * temp[j + 1]) / sz;
-		}
-
+	static ComplexSignal transformToComplex(const RealSignal& signal)
+	{
+		ComplexSignal out;
+		out.resize(signal.size());
+		std::transform(std::cbegin(signal), std::cend(signal), std::begin(out), [](const double& in) {return in; });
 		return out;
 	}
 
-	static std::vector<double>& rotate(std::vector<double>& in)
+	static RealSignal amplitudeSpectre(const ComplexSignal& spectre, double tau = 1.)
 	{
-		auto sz = in.size();
-		auto half = sz / 2;
-		for (int i = 0; i < half / 2; ++i)
-		{
-			std::swap(in[i], in[half - i - 1]);
-		}
-		for (auto i = half; i < half + half / 2; ++i)
-		{
-			std::swap(in[i], in[sz - (i - half) - 1]);
-		}
-
-		return in;
-	}
-
-	static std::vector<double> lowFreqFilter(const std::vector<double>& in, double threshold = 0.005)
-	{
-		std::vector<double> out;
-		auto sz = in.size();
-		for (int i = 0; i < sz; ++i)
-		{
-			if (in[i] > threshold)
-			{
-				out.push_back(in[i]);
-			}
-			else if (i > 0 && i < sz - 1)
-			{
-				out.push_back((in[i - 1] + in[i + 1]) / 2);
-			}
-		}
+		RealSignal out;
+		out.resize(spectre.size());
+		double scale = 2 * tau;
+		std::transform(std::cbegin(spectre), std::cend(spectre), std::begin(out), [scale](const std::complex<double>& in) {return std::abs(in)/ (sampleCount/ scale); });
 		return out;
 	}
+
+	static ComplexSignal& rotate(ComplexSignal& spectre)
+	{
+		auto sz = spectre.size();
+		for (size_t i = 0; i < sz / 4; ++i)
+		{
+			std::swap(spectre[i], spectre[sz / 2 - i - 1]);
+		}
+		for (size_t i = 0; i < sz / 4; ++i)
+		{
+			std::swap(spectre[sz / 2 + i], spectre[sz - i - 1]);
+		}
+		return spectre;
+	}
+
 };

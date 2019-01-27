@@ -8,5 +8,10 @@
         <file>Resources/cross.png</file>
         <file>Resources/verification-mark.png</file>
         <file>Resources/save-icon.png</file>
+        <file>Resources/open.png</file>
+        <file>Resources/scale_hor.png</file>
+        <file>Resources/scale_vert.png</file>
+        <file>Resources/large.png</file>
+        <file>Resources/small.png</file>
     </qresource>
 </RCC>

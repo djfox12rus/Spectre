@@ -22,8 +22,10 @@ signals:
 	void	setTauVisible(bool visible);
 	void	setAVisible(bool visible);
 	void	setBVisible(bool visible);
-
+	void	setFVisible(bool visible);
 	void	apply();
+
+	void	setCoordsValueVisible(bool show);
 
 private slots:
 	void	setFunctionType(int type);
@@ -67,6 +69,7 @@ private:
 		Libsig34,
 		Libsig35,
 		Libsig36,
+		Sin,
 		LibsigCount
 	};
 
@@ -74,6 +77,7 @@ private:
 	double			_currentTau{1};
 	double			_currentA{ 1 };
 	double			_currentB{ 1 };
+	int				_currentF{ 1 };
 	GraphView*		_view;
 
 	std::function<double(double)> _currenFunc;
@@ -127,6 +131,7 @@ private:
 	static double libsig34(double t, double a);
 	static double libsig35(double t, double a);
 	static double libsig36(double t, double a);
+	static double libsin(double t, double f);
 
 	static double sinc(double x);
 
@@ -166,6 +171,6 @@ private:
 	static double spectr34(double w, double a);
 	static double spectr35(double w, double a);
 	static double spectr36(double w, double a);
-
+	static double spectr_sin(double w, double f);
 };
 

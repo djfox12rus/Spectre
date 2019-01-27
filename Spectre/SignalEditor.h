@@ -20,6 +20,11 @@ public:
 
 signals:
 	void	apply();
+	void	setCoordsValueVisible(bool show);
+
+private slots:
+	void	saveHandler();
+	void	loadHandler();
 
 private:
 	GraphEditor *	_editor{};

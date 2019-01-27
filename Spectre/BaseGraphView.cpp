@@ -16,13 +16,16 @@
 static constexpr double		epsilon			= std::numeric_limits<double>::epsilon() * 5;
 static constexpr int		yCoordsOffset	= 35;
 static constexpr int		xCoordsOffset	= 20;
-static constexpr int		yTopOffset		= 10;
-static constexpr int		xLeftOffset		= 15;
+static constexpr int		yTopOffset		= 20;
+static constexpr int		xLeftOffset		= 10;
 static constexpr int		fontSize		= 10;
 static constexpr int		precisionLines	= 5;
 
 static constexpr int		shadeOfGray		= 0xea;
 static const QColor backColor(shadeOfGray, shadeOfGray, shadeOfGray);
+
+static QFont f{ "Times", 10 };
+static QFontMetrics fm{ f };
 
 BaseGraphView::BaseGraphView(QWidget* parent)
 	:QWidget(parent)
@@ -62,6 +65,21 @@ void BaseGraphView::setYHighBorder(double border)
 	_yBorders.second = border;
 	adjYGridStep();
 	updateAndRepaint();
+}
+
+void BaseGraphView::setXAxisName(const QString & name)
+{
+	_xAxisName = name;
+}
+
+void BaseGraphView::setYAxisName(const QString & name)
+{
+	_yAxisName = name;
+}
+
+void BaseGraphView::setShowCoordsValues(bool show)
+{
+	_showCoordsValues = show;
 }
 
 //void BaseGraphView::setXGridStep(double step)
@@ -175,6 +193,20 @@ void BaseGraphView::mouseMoveEvent(QMouseEvent * event)
 		vertical.setP2(pos);
 		_painter.drawLine(vertical);
 
+		if (_showCoordsValues)
+		{
+			auto point = mapFromGraph(mapWdgtToGraph(pos));
+			_painter.setFont(f);
+
+			auto str =" " + QString::number(point.x(), 'f', 2) + ", " + QString::number(point.y(), 'f', 2);
+			QRectF rect(QPointF{ pos.x() + 2, pos.y() - fm.height() - 3 }, QSizeF{double(fm.width(str)), double(fm.height())});
+
+			_painter.setBrush(Qt::white);
+			_painter.drawRect(rect);
+			_painter.drawText(rect, str);
+
+		}
+
 		_painter.end();
 	}
 	repaint();
@@ -189,7 +221,8 @@ QPixmap BaseGraphView::makeTemplatePix(QSize newSize)
 	QVector<QLineF> horisontalPrecGridLines;
 	CoordsValues xCoords;
 	CoordsValues yCoords;
-	std::tie(_templateGraph, verticalPrecGridLines, horisontalPrecGridLines, xCoords, yCoords) = makeTemplateGraphPix(graphSize);
+	QPointF origin;
+	std::tie(_templateGraph, verticalPrecGridLines, horisontalPrecGridLines, xCoords, yCoords, origin) = makeTemplateGraphPix(graphSize);
 
  	auto templateGraph = updateGraph(_templateGraph);
 
@@ -206,10 +239,9 @@ QPixmap BaseGraphView::makeTemplatePix(QSize newSize)
 		_painter.drawLines(verticalPrecGridLines);
 		_painter.drawLines(horisontalPrecGridLines);
 
-		QFont f("Times", 10);
+		
 		_painter.setFont(f);
 
-		QFontMetrics fm(f);
 		const auto xCoordsTextOffset = newSize.height() - (xCoordsOffset - fontSize - 5);
 		for (const auto& xCoord : xCoords)
 		{
@@ -221,12 +253,18 @@ QPixmap BaseGraphView::makeTemplatePix(QSize newSize)
 			_painter.drawText(QPointF(2, yCoord.second + fontSize/2 + yTopOffset), adjCoord(yCoord.first, epsilon));
 		}
 
+		_painter.drawText(QPointF(origin.x() + yCoordsOffset/2, yTopOffset - 3), _yAxisName);
+		_painter.setBrush(Qt::white);
+		QRect xAxisText{ QPoint(newSize.width() - xLeftOffset - fm.width(_xAxisName) - 5, origin.y() + yTopOffset - fm.height()), QSize {fm.width(_xAxisName) + 5, fm.height()} };
+		_painter.drawRect(xAxisText);
+		_painter.drawText(QPointF(newSize.width() - xLeftOffset - fm.width(_xAxisName) - 3, origin.y() + yTopOffset - 3), _xAxisName);
+
 		_painter.end();
 	}
 	return out;
 }
 
-std::tuple<QPixmap, QVector<QLineF>, QVector<QLineF>, BaseGraphView::CoordsValues, BaseGraphView::CoordsValues> BaseGraphView::makeTemplateGraphPix(QSize graphSize)
+std::tuple<QPixmap, QVector<QLineF>, QVector<QLineF>, BaseGraphView::CoordsValues, BaseGraphView::CoordsValues, QPointF> BaseGraphView::makeTemplateGraphPix(QSize graphSize)
 {
 	QPixmap templateGraph(graphSize); //TODO: adj size
 	templateGraph.fill(Qt::white);
@@ -314,12 +352,14 @@ std::tuple<QPixmap, QVector<QLineF>, QVector<QLineF>, BaseGraphView::CoordsValue
 	{
 		auto point = mapToGraph({});
 		zeroX.setLine(point.x(), 0, point.x(), templateGraph.height());
+		xCoords.emplace_back(point.x(), 0);
 	}
 
 	if (!zeroYDrawn)
 	{
 		auto point = mapToGraph({});
 		zeroY.setLine(0, point.y(), templateGraph.width(), point.y());
+		yCoords.emplace_back(0, point.y());
 	}
 
 	{
@@ -341,7 +381,7 @@ std::tuple<QPixmap, QVector<QLineF>, QVector<QLineF>, BaseGraphView::CoordsValue
 
 		_painter.end();
 	}
-	return { templateGraph, verticalPrecGridLines, horisontalPrecGridLines, xCoords, yCoords };
+	return { templateGraph, verticalPrecGridLines, horisontalPrecGridLines, xCoords, yCoords, mapToGraph({}) };
 }
 
 void BaseGraphView::insertGraph(QPixmap& graph, QPixmap templateGraph)

@@ -87,9 +87,6 @@
     <ClInclude Include="GraphFunction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FFT.h">
       <Filter>Header Files</Filter>
     </ClInclude>

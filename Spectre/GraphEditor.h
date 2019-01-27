@@ -11,6 +11,10 @@ public:
 	GraphEditor(QWidget * parent = nullptr);
 
 	const QPolygonF&	currentLine()const;
+	void				setCurrentLine(const QPolygonF& line);
+
+signals:
+	void	saveAvailable();
 
 public slots:
 	void	discard();
@@ -27,5 +31,7 @@ private:
 	bool			_mouseLeftPressed{ false };
 	bool			_drawTempLine{ true };
 	QPointF			_pos;
+
+	bool			_saveAvail{ false };
 };
 
