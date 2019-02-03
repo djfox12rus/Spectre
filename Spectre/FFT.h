@@ -10,7 +10,7 @@
 
 struct FFT
 {
-	static constexpr int sampleCount = 4096;
+	static constexpr int sampleCount = 8192;
 	static constexpr double TwoPi = M_PI * 2;
 
 	using ComplexSignal = std::vector<std::complex<double>>;

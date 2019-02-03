@@ -23,6 +23,9 @@
 #include <QAction>
 #include <QList>
 #include <QMargins>
+#include <QPushButton>
+#include <QIcon>
+#include <QFileDialog>
 
 static const QString titleStr = QStringLiteral("Ѕиблиотека сигналов");
 static constexpr double		epsilon = std::numeric_limits<double>::epsilon() * 10;
@@ -43,8 +46,34 @@ void SignalLibrary::setFunctionType(int type)
 	emit setTauVisible(type >= Libsig1 && type <= Libsig8 || type == Libsig16 || type == Libsig32);
 	emit setAVisible(type >= Libsig11 && type<= Libsig36 && type != Libsig32);
 	emit setBVisible(type == Libsig18);
-	emit setFVisible(type == Sin);
+	//emit setFVisible(type == Sin);
 }
+
+
+void SignalLibrary::saveSignalPix()
+{
+	auto title = QStringLiteral("—охранить ") + QStringLiteral("формулу сигнала");
+	auto defaultName = QStringLiteral("Cигнал ") + getSignalName(int(_currentType));
+	auto fileName = QFileDialog::getSaveFileName(this, title, "/home/" + defaultName, QStringLiteral("»зображени€ ") + "(*.png)");
+
+	if (fileName.isEmpty()) return;
+
+	QImage image = (getSignalPixmap(int(_currentType))).toImage();
+	image.save(fileName);
+}
+
+void SignalLibrary::saveSpectrePix()
+{
+	auto title = QStringLiteral("—охранить ") + QStringLiteral("формулу спектра");
+	auto defaultName = QStringLiteral("Cпектр ") + getSignalName(int(_currentType));
+	auto fileName = QFileDialog::getSaveFileName(this, title, "/home/" + defaultName, QStringLiteral("»зображени€ ") + "(*.png)");
+
+	if (fileName.isEmpty()) return;
+
+	QImage image = (getSpectrePixmap(int(_currentType))).toImage();
+	image.save(fileName);
+}
+
 
 std::function<double(double)> SignalLibrary::currentFunction() const
 {
@@ -73,7 +102,17 @@ void SignalLibrary::init()
 	addToolBar(initToolBar(actions));
 	addToolBar(initChooseFuncToolBar());
 
-	setCentralWidget(_view);
+	auto helperWgt = new QWidget;
+	helperWgt->setContentsMargins(0, 0, 0, 0);
+	auto helperLayout = new QVBoxLayout;
+	helperLayout->setContentsMargins(0, 0, 0, 0);
+	helperLayout->addWidget(_view);
+	helperLayout->setStretchFactor(_view, 1);
+	helperLayout->addWidget(initFormView());
+
+	helperWgt->setLayout(helperLayout);
+
+	setCentralWidget(helperWgt);
 
 	setFunctionType(0);
 
@@ -100,6 +139,7 @@ QToolBar * SignalLibrary::initChooseFuncToolBar()
 	}
 
 	connect(chooseFuncBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &SignalLibrary::setFunctionType);
+	connect(chooseFuncBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &SignalLibrary::currentFuncChanged);
 
 	mainLayout->addWidget(chooseFuncBox);
 	
@@ -136,31 +176,31 @@ QToolBar * SignalLibrary::initChooseFuncToolBar()
 		updateFunction();
 	});
 
-	auto FSpinBox = new QSpinBox;
-	FSpinBox->setMaximumWidth(50);
-	FSpinBox->setRange(0, std::numeric_limits<int>::max());
-	FSpinBox->setSingleStep(1);
-	FSpinBox->setValue(_currentF);
-	connect(FSpinBox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this](int b)
-	{
-		_currentF = b;
-		updateFunction();
-	});
+	//auto FSpinBox = new QSpinBox;
+	//FSpinBox->setMaximumWidth(50);
+	//FSpinBox->setRange(0, std::numeric_limits<int>::max());
+	//FSpinBox->setSingleStep(1);
+	//FSpinBox->setValue(_currentF);
+	//connect(FSpinBox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this](int b)
+	//{
+	//	_currentF = b;
+	//	updateFunction();
+	//});
 
 	auto tauLbl = new QLabel(QStringLiteral("Tau"));
 	auto aLbl = new QLabel(QStringLiteral("A"));
 	auto bLbl = new QLabel(QStringLiteral("B"));
-	auto fLbl = new QLabel(QStringLiteral("F"));
+//	auto fLbl = new QLabel(QStringLiteral("F"));
 
 	connect(this, &SignalLibrary::setTauVisible, tauLbl, &QLabel::setVisible);
 	connect(this, &SignalLibrary::setAVisible, aLbl, &QLabel::setVisible);
 	connect(this, &SignalLibrary::setBVisible, bLbl, &QLabel::setVisible);
-	connect(this, &SignalLibrary::setFVisible, fLbl, &QLabel::setVisible);
+	//connect(this, &SignalLibrary::setFVisible, fLbl, &QLabel::setVisible);
 
 	connect(this, &SignalLibrary::setTauVisible, tauSpinBox, &QDoubleSpinBox::setVisible);
 	connect(this, &SignalLibrary::setAVisible, ASpinBox, &QDoubleSpinBox::setVisible);
 	connect(this, &SignalLibrary::setBVisible, BSpinBox, &QDoubleSpinBox::setVisible);
-	connect(this, &SignalLibrary::setFVisible, FSpinBox, &QDoubleSpinBox::setVisible);
+	//connect(this, &SignalLibrary::setFVisible, FSpinBox, &QDoubleSpinBox::setVisible);
 
 	auto helperLayout = new QHBoxLayout;
 	helperLayout->addWidget(chooseFuncBox);
@@ -180,10 +220,10 @@ QToolBar * SignalLibrary::initChooseFuncToolBar()
 	tempLayout->addWidget(BSpinBox);
 	helperLayout->addLayout(tempLayout);
 
-	tempLayout = new QHBoxLayout;
-	tempLayout->addWidget(fLbl);
-	tempLayout->addWidget(FSpinBox);
-	helperLayout->addLayout(tempLayout);
+//	tempLayout = new QHBoxLayout;
+	//tempLayout->addWidget(fLbl);
+	//tempLayout->addWidget(FSpinBox);
+//	helperLayout->addLayout(tempLayout);
 
 	auto helperWgt = new QWidget;
 	helperWgt->setLayout(helperLayout);
@@ -206,6 +246,41 @@ QToolBar * SignalLibrary::initChooseFuncToolBar()
 	});
 
 	return box;
+}
+
+QWidget * SignalLibrary::initFormView()
+{
+	auto wgt = new QWidget;
+	auto layout = new QHBoxLayout;
+	
+	auto sigLbl = new QLabel;
+	sigLbl->setPixmap(getSignalPixmap(Libsig1));
+	auto speLbl = new QLabel;
+	speLbl->setPixmap(getSpectrePixmap(Libsig1));
+
+	connect(this, &SignalLibrary::currentFuncChanged, [sigLbl, speLbl](int type)
+	{
+		sigLbl->setPixmap(getSignalPixmap(type));
+		speLbl->setPixmap(getSpectrePixmap(type));
+	});
+
+	layout->addStretch();
+	layout->addWidget(sigLbl);
+	layout->addWidget(speLbl);
+
+	auto saveSigBtn = new QPushButton(QStringLiteral("—охранить формулу сигнала"));
+	connect(saveSigBtn, &QPushButton::clicked, this, &SignalLibrary::saveSignalPix);
+	auto saveSpeBtn = new QPushButton(QStringLiteral("—охранить формулу спектра"));
+	connect(saveSpeBtn, &QPushButton::clicked, this, &SignalLibrary::saveSpectrePix);
+
+	auto helperLayout = new QVBoxLayout;
+	helperLayout->addWidget(saveSigBtn);
+	helperLayout->addWidget(saveSpeBtn);
+	layout->addLayout(helperLayout);
+	layout->addStretch();
+
+	wgt->setLayout(layout);
+	return wgt;
 }
 
 QList<QAction*> SignalLibrary::initActions()
@@ -243,84 +318,94 @@ QMenuBar * SignalLibrary::initMenuBar(const QList<QAction*>& acts)
 	return menuBar;
 }
 
+QPixmap SignalLibrary::getSignalPixmap(int type)
+{
+	return { ":/Spectre/Resources/sig_spe/sig"+ QString::number(type + 1) + ".PNG" };
+}
+
+QPixmap SignalLibrary::getSpectrePixmap(int type)
+{
+	return { ":/Spectre/Resources/sig_spe/spe" + QString::number(type + 1) + ".PNG" };
+}
+
 QString SignalLibrary::getSignalName(int type)
 {
 	switch (FunctionTypes(type))
 	{
-	case SignalLibrary::Libsig1: return QStringLiteral("—игнал 1");
+	case SignalLibrary::Libsig1: return QStringLiteral("ѕр€моугольный");
 		break;
-	case SignalLibrary::Libsig2: return QStringLiteral("—игнал 2");
+	case SignalLibrary::Libsig2: return QStringLiteral("ћеандровый");
 		break;
-	case SignalLibrary::Libsig3: return QStringLiteral("—игнал 3");
+	case SignalLibrary::Libsig3: return QStringLiteral("“реугольный");
 		break;
-	case SignalLibrary::Libsig4: return QStringLiteral("—игнал 4");
+	case SignalLibrary::Libsig4: return QStringLiteral("“рапецевидный");
 		break;
-	case SignalLibrary::Libsig5: return QStringLiteral("—игнал 5");
+	case SignalLibrary::Libsig5: return QStringLiteral(" осинус");
 		break;
-	case SignalLibrary::Libsig6: return QStringLiteral("—игнал 6");
+	case SignalLibrary::Libsig6: return QStringLiteral(" вадрат косинуса");
 		break;
-	case SignalLibrary::Libsig7: return QStringLiteral("—игнал 7");
+	case SignalLibrary::Libsig7: return QStringLiteral("ћодуль синуса");
 		break;
-	case SignalLibrary::Libsig8: return QStringLiteral("—игнал 8");
+	case SignalLibrary::Libsig8: return QStringLiteral(" вадрат синуса");
 		break;
-	case SignalLibrary::SincPiX: return QStringLiteral("—игнал 9");
+	case SignalLibrary::SincPiX: return QStringLiteral("sinc-функци€");
 		break;
-	case SignalLibrary::Libsig10: return QStringLiteral("—игнал 10");
+	case SignalLibrary::Libsig10: return QStringLiteral(" вадрат sinc-функции");
 		break;
-	case SignalLibrary::Libsig11: return QStringLiteral("—игнал 11");
+	case SignalLibrary::Libsig11: return QStringLiteral("√иперболический секанс");
 		break;
-	case SignalLibrary::Libsig12: return QStringLiteral("—игнал 12");
+	case SignalLibrary::Libsig12: return QStringLiteral(" вадрат гиперболического секанса");
 		break;
-	case SignalLibrary::Libsig13: return QStringLiteral("—игнал 13");
+	case SignalLibrary::Libsig13: return QStringLiteral("√иперболический секанс 2");
 		break;
-	case SignalLibrary::Libsig14: return QStringLiteral("—игнал 14");
+	case SignalLibrary::Libsig14: return QStringLiteral("√иперболический косеканс");
 		break;
-	case SignalLibrary::Libsig15: return QStringLiteral("—игнал 15");
+	case SignalLibrary::Libsig15: return QStringLiteral("Ёкспоненциальный");
 		break;
-	case SignalLibrary::Libsig16: return QStringLiteral("—игнал 16");
+	case SignalLibrary::Libsig16: return QStringLiteral("Ёкспоненциальный 2");
 		break;
-	case SignalLibrary::Libsig17: return QStringLiteral("—игнал 17");
+	case SignalLibrary::Libsig17: return QStringLiteral("Ёкспоненциальный 3");
 		break;
-	case SignalLibrary::Libsig18: return QStringLiteral("—игнал 18");
+	case SignalLibrary::Libsig18: return QStringLiteral("–азность экспонент");
 		break;
-	case SignalLibrary::Libsig19: return QStringLiteral("—игнал 19");
+	case SignalLibrary::Libsig19: return QStringLiteral("Ёкспоненциальный 4");
 		break;
-	case SignalLibrary::Libsig20: return QStringLiteral("—игнал 20");
+	case SignalLibrary::Libsig20: return QStringLiteral("Ёкспоненциальный 5");
 		break;
-	case SignalLibrary::Libsig21: return QStringLiteral("—игнал 21");
+	case SignalLibrary::Libsig21: return QStringLiteral("Ёкспоненциальный 6");
 		break;
-	case SignalLibrary::Libsig22: return QStringLiteral("—игнал 22");
+	case SignalLibrary::Libsig22: return QStringLiteral("Ёкспоненциальный 7");
 		break;
-	case SignalLibrary::Libsig23: return QStringLiteral("—игнал 23");
+	case SignalLibrary::Libsig23: return QStringLiteral("Ёкспоненциальный 8");
 		break;
-	case SignalLibrary::Libsig24: return QStringLiteral("—игнал 24");
+	case SignalLibrary::Libsig24: return QStringLiteral("Ёкспоненциальный 9");
 		break;
-	case SignalLibrary::Libsig25: return QStringLiteral("—игнал 25");
+	case SignalLibrary::Libsig25: return QStringLiteral("Ёкспоненциальный 10");
 		break;
-	case SignalLibrary::Libsig26: return QStringLiteral("—игнал 26");
+	case SignalLibrary::Libsig26: return QStringLiteral("Ёкспоненциальный 11");
 		break;
-	case SignalLibrary::Libsig27: return QStringLiteral("—игнал 27");
+	case SignalLibrary::Libsig27: return QStringLiteral("Ёкспоненциальный 12");
 		break;
-	case SignalLibrary::Libsig28: return QStringLiteral("—игнал 28");
+	case SignalLibrary::Libsig28: return QStringLiteral("Ёкспоненциальный 13");
 		break;
-	case SignalLibrary::Libsig29: return QStringLiteral("—игнал 29");
+	case SignalLibrary::Libsig29: return QStringLiteral("Ёкспоненциальный 14");
 		break;
-	case SignalLibrary::Libsig30: return QStringLiteral("—игнал 30");
+	case SignalLibrary::Libsig30: return QStringLiteral("Ёкспоненциальный 15");
 		break;
-	case SignalLibrary::Libsig31: return QStringLiteral("—игнал 31");
+	case SignalLibrary::Libsig31: return QStringLiteral("Ёкспоненциальный 16");
 		break;
-	case SignalLibrary::Libsig32: return QStringLiteral("—игнал 32");
+	case SignalLibrary::Libsig32: return QStringLiteral("ѕараболический");
 		break;
-	case SignalLibrary::Libsig33: return QStringLiteral("—игнал 33");
+	case SignalLibrary::Libsig33: return QStringLiteral("ƒробно-рациональный");
 		break;
-	case SignalLibrary::Libsig34: return QStringLiteral("—игнал 34");
+	case SignalLibrary::Libsig34: return QStringLiteral("ƒробно-рациональный 2");
 		break;
-	case SignalLibrary::Libsig35: return QStringLiteral("—игнал 35");
+	case SignalLibrary::Libsig35: return QStringLiteral("Ёкспоненциальный 17");
 		break;
-	case SignalLibrary::Libsig36: return QStringLiteral("—игнал 36");
+	case SignalLibrary::Libsig36: return QStringLiteral("Ёкспоненциальный 18");
 		break;
-	case SignalLibrary::Sin: return QStringLiteral("—инус");
-		break;
+	//case SignalLibrary::Sin: return QStringLiteral("—инус");
+	//	break;
 	case SignalLibrary::LibsigCount:
 		break;
 	default:
@@ -615,14 +700,14 @@ void SignalLibrary::updateFunction()
 		};
 	}
 	break;
-	case SignalLibrary::Sin:
-	{
-		_currenFunc = [&f = _currentF](double x) -> double
-		{
-			return libsin(x, f);
-		};
-	}
-	break;
+	//case SignalLibrary::Sin:
+	//{
+	//	_currenFunc = [&f = _currentF](double x) -> double
+	//	{
+	//		return libsin(x, f);
+	//	};
+	//}
+	//break;
 	default:
 		break;
 	}
@@ -918,14 +1003,14 @@ std::function<double(double)> SignalLibrary::currentSpectrePriv() const
 		};
 	}
 	break;
-	case SignalLibrary::Sin:
-	{
-		return [&f = _currentF](double x) -> double
-		{
-			return spectr_sin(x, f);
-		};
-	}
-	break;
+	//case SignalLibrary::Sin:
+	//{
+	//	return [&f = _currentF](double x) -> double
+	//	{
+	//		return spectr_sin(x, f);
+	//	};
+	//}
+	//break;
 	default:
 		break;
 	}
@@ -936,27 +1021,27 @@ std::function<double(double)> SignalLibrary::currentSpectrePriv() const
 	};
 }
 
-
+//rect
 double SignalLibrary::libsig1(double t, double tau)
 {
 	const double x = t / tau;
 	if ((x < -0.5) || (x > 0.5)) return 0.0;
 	return 1.0;
 }
-
+//meandr
 double SignalLibrary::libsig2(double t, double tau)
 {
 	if (t / tau < 0.0) return libsig1(t, tau);
 	return -libsig1(t, tau);
 }
-
+//triangle
 double SignalLibrary::libsig3(double t, double tau)
 {
 	double x = fabs(t / tau);
 	if (x > 0.5) return 0;
 	return 1.0 - 2.0 * x;
 }
-
+//trapeze
 double SignalLibrary::libsig4(double t, double tau)
 {
 	double x = fabs(t / tau);
@@ -964,7 +1049,7 @@ double SignalLibrary::libsig4(double t, double tau)
 	if (x < 1.0 / 6.0) return 1.0;
 	return 3.0 * (0.5 - x);
 }
-
+//cos pi*t/tau
 double SignalLibrary::libsig5(double t, double tau)
 {
 	double x = fabs(t / tau);
@@ -973,7 +1058,7 @@ double SignalLibrary::libsig5(double t, double tau)
 	while (x > 1.0e+15) x -= 2 * M_PI;
 	return cos(x);
 }
-
+//cos^2 pi*t/tau
 double SignalLibrary::libsig6(double t, double tau)
 {
 	const double y = libsig5(t, tau);
@@ -1418,5 +1503,3 @@ double SignalLibrary::spectr_sin(double w, double f)
 	if (std::abs(std::abs(w) - 2 * M_PI*f) < epsilon2) return 1;
 	return 0.0;
 }
-
-

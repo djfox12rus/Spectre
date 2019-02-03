@@ -27,8 +27,13 @@ signals:
 
 	void	setCoordsValueVisible(bool show);
 
+	void	currentFuncChanged(int type);
+
 private slots:
 	void	setFunctionType(int type);
+
+	void	saveSignalPix();
+	void	saveSpectrePix();
 
 private:
 	enum FunctionTypes
@@ -69,7 +74,7 @@ private:
 		Libsig34,
 		Libsig35,
 		Libsig36,
-		Sin,
+		//Sin,
 		LibsigCount
 	};
 
@@ -85,12 +90,16 @@ private:
 	void		init();
 	QMenuBar*	initMenuBar();
 	QToolBar*	initChooseFuncToolBar();
+	QWidget*	initFormView();
 
 	QList<QAction*>	initActions();
 	QToolBar*		initToolBar(const QList<QAction*>& acts);
 	QMenuBar*		initMenuBar(const QList<QAction*>& acts);
 
-	QString		getSignalName(int type);
+	static QPixmap			getSignalPixmap(int type);
+	static QPixmap			getSpectrePixmap(int type);
+
+	static QString		getSignalName(int type);
 	void		updateFunction();
 
 	std::function<double(double)>	currentSpectrePriv()const;

@@ -30,6 +30,7 @@ static QFontMetrics fm{ f };
 BaseGraphView::BaseGraphView(QWidget* parent)
 	:QWidget(parent)
 {
+	_painter.setRenderHint(QPainter::Antialiasing);
 	setMouseTracking(true);
 	setCursor(Qt::CrossCursor);
 }
@@ -245,12 +246,32 @@ QPixmap BaseGraphView::makeTemplatePix(QSize newSize)
 		const auto xCoordsTextOffset = newSize.height() - (xCoordsOffset - fontSize - 5);
 		for (const auto& xCoord : xCoords)
 		{
-			_painter.drawText(QPointF(xCoord.second + yCoordsOffset - fm.width("0.00")/ 2, xCoordsTextOffset), adjCoord(xCoord.first, epsilon));
+			if (xCoord.first == 0.0)
+			{
+				QRect r {QPoint(xCoord.second + yCoordsOffset - fm.width("0.00") / 2, xCoordsTextOffset - fm.height() + 2), QSize{fm.width("0.00"), fm.height()} };
+				_painter.setBrush(Qt::white);
+				_painter.drawRect(r);
+				_painter.drawText(r, Qt::AlignCenter, adjCoord(xCoord.first, epsilon));
+			}
+			else
+			{
+				_painter.drawText(QPointF(xCoord.second + yCoordsOffset - fm.width("0.00") / 2, xCoordsTextOffset), adjCoord(xCoord.first, epsilon));
+			}
 		}
 
 		for (const auto& yCoord : yCoords)
 		{
-			_painter.drawText(QPointF(2, yCoord.second + fontSize/2 + yTopOffset), adjCoord(yCoord.first, epsilon));
+			if (std::fabs(yCoord.first) < epsilon)
+			{
+				QRect r{ QPoint(2, yCoord.second + fontSize / 2 + yTopOffset - fm.height() + 2), QSize{fm.width("0.00"), fm.height()} };
+				_painter.setBrush(Qt::white);
+				_painter.drawRect(r);
+				_painter.drawText(r, Qt::AlignCenter, adjCoord(yCoord.first, epsilon));
+			}
+			else
+			{
+				_painter.drawText(QPointF(2, yCoord.second + fontSize / 2 + yTopOffset), adjCoord(yCoord.first, epsilon));
+			}
 		}
 
 		_painter.drawText(QPointF(origin.x() + yCoordsOffset/2, yTopOffset - 3), _yAxisName);
@@ -352,7 +373,7 @@ std::tuple<QPixmap, QVector<QLineF>, QVector<QLineF>, BaseGraphView::CoordsValue
 	{
 		auto point = mapToGraph({});
 		zeroX.setLine(point.x(), 0, point.x(), templateGraph.height());
-		xCoords.emplace_back(point.x(), 0);
+		xCoords.emplace_back(0, point.x());
 	}
 
 	if (!zeroYDrawn)

@@ -44,9 +44,9 @@ static const QString signalSave = QStringLiteral("Сохранить как...");
 static const QString exitStr = QStringLiteral("Выход");
 
 static const QString singlePulseStr = QStringLiteral("Одиночный импульс");
-static const QString periodicPulseStr = QStringLiteral("Периодический импульс");
-static const QString singleRadioPulseStr = QStringLiteral("Одиночный радио-импульс");
-static const QString periodicRadioPulseStr = QStringLiteral("Периодический радио-импульс");
+static const QString periodicPulseStr = QStringLiteral("Периодическая последовательность импульсов");
+static const QString singleRadioPulseStr = QStringLiteral("Одиночный радиоимпульс");
+static const QString periodicRadioPulseStr = QStringLiteral("Периодическая последовательность радиоимпульсов");
 
 static const QString signalParamsStr = QStringLiteral("Параметры сигнала");
 static const QString showCoordsValuesStr = QStringLiteral("Показывать координаты курсора");
@@ -95,6 +95,18 @@ void Spectre::wheelEvent(QWheelEvent * ev)
 	scrollY(angle.y());
 
 	QMainWindow::wheelEvent(ev);
+}
+
+void Spectre::closeEvent(QCloseEvent * ev)
+{
+	if (_lib &&_lib->isVisible())
+	{
+		_lib->close();
+	}
+	if (_editor && _editor->isVisible())
+	{
+		_editor->close();
+	}
 }
 
 void Spectre::openSignalLibrary()
@@ -161,6 +173,8 @@ void Spectre::saveAs()
 	auto title = QStringLiteral("Сохранить ") + (_currentTab == SignalTab ? QStringLiteral("Cигнал") : QStringLiteral("Спектр"));
 	auto defaultName = _currentTab == SignalTab ? QStringLiteral("Сигнал") : QStringLiteral("Спектр");
 	auto fileName = QFileDialog::getSaveFileName(this, title, "/home/" + defaultName, QStringLiteral("Изображения ") + "(*.png)");
+
+	if (fileName.isEmpty()) return;
 
 	QImage image = (_currentTab == SignalTab ? _currentGraph->pixmap() : _currentSpectre->pixmap()).toImage();
 	image.save(fileName);
@@ -509,6 +523,7 @@ QDialog * Spectre::initSignalParams()
 
 	connect(signalType, static_cast<void(QComboBox::*)(int)> (&QComboBox::currentIndexChanged), [durationLabel, periodLabel, freqLabel, duration, period, freqEdit, &signalParams = _signalParams](int index)
 	{
+		auto prevType = signalParams.type;
 		signalParams.type = SignalType(index);
 
 		if (signalParams.type == Pulse || signalParams.type == RadioPulse)
@@ -530,11 +545,19 @@ QDialog * Spectre::initSignalParams()
 		{
 			freqLabel->setVisible(true);
 			freqEdit->setVisible(true);
+			if (prevType == Pulse || prevType == PeriodicPulse)
+			{
+				signalParams.changeRange = true;
+			}
 		}
 		else
 		{
 			freqLabel->setVisible(false);
 			freqEdit->setVisible(false);
+			if (prevType == RadioPulse || prevType == PeriodicRadioPulse)
+			{
+				signalParams.changeRange = true;
+			}
 		}
 	});
 
@@ -630,20 +653,28 @@ void Spectre::processSignalParams()
 				{
 					x += freq;
 				}
-				return initialSpectre(x);
+				return initialSpectre(x) / 2;
 			};
 			
 			_currentSpectre->setFunction(radioSpectre);
 
-			_spectreBorders.xHigh->setValue(freq + 10);
-			_spectreBorders.xLow->setValue(freq - 10);
+			if (_signalParams.changeRange)
+			{
+				_signalParams.changeRange = false;
+				_spectreBorders.xHigh->setValue(freq + 10);
+				_spectreBorders.xLow->setValue(freq - 10);
+			}
 		}
 		else
 		{
 			_currentSpectre->setFunction(pulsSpectr);
 
-			_spectreBorders.xLow->setValue(-10);
-			_spectreBorders.xHigh->setValue(10);
+			if (_signalParams.changeRange)
+			{
+				_signalParams.changeRange = false;
+				_spectreBorders.xLow->setValue(-10);
+				_spectreBorders.xHigh->setValue(10);
+			}
 		}
 	}
 	break;
@@ -700,18 +731,26 @@ void Spectre::processSignalParams()
 				{
 					x += freq;
 				}
-				return initialSpectre(x);
+				return initialSpectre(x) / 2;
 			};
 			_currentSpectre->setFunction(periodicRadioSpectre, 2 * M_PI / period);
 
-			_spectreBorders.xHigh->setValue(freq + 10);
-			_spectreBorders.xLow->setValue(freq - 10);
+			if (_signalParams.changeRange)
+			{
+				_signalParams.changeRange = false;
+				_spectreBorders.xHigh->setValue(freq + 10);
+				_spectreBorders.xLow->setValue(freq - 10);
+			}
 		}
 		else
 		{
 			_currentSpectre->setFunction(_initialSpectre, 2 * M_PI / period);
-			_spectreBorders.xLow->setValue(-10);
-			_spectreBorders.xHigh->setValue(10);
+			if (_signalParams.changeRange)
+			{
+				_signalParams.changeRange = false;
+				_spectreBorders.xLow->setValue(-10);
+				_spectreBorders.xHigh->setValue(10);
+			}
 		}
 	}
 		break;

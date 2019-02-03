@@ -28,6 +28,7 @@ signals:
 
 protected:
 	void		wheelEvent(QWheelEvent* ev) override;
+	void		closeEvent(QCloseEvent* ev) override;
 
 private slots:
 	void		openSignalEditor();
@@ -58,6 +59,7 @@ private:
 	struct SignalParams
 	{
 		SignalType	type{Pulse};
+		bool		changeRange{ false };
 		double		duration{1};
 		double		period{2};
 		int			carrierFreq{ 1000 };
